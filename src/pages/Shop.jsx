@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ProductShowcase from '../components/ProductShowcase';
+import { clickable } from '../clickable';
 
 const PRODUCTS = [
     {
@@ -9,7 +10,7 @@ const PRODUCTS = [
         description: 'Our signature sprouted ancient grain mix. Crafted with Pearl Millet, Finger Millet, Sorghum, and legumes — hygienically processed and enriched with green cardamom. 100% natural, no chemicals or preservatives.',
         price: 110,
         inrPrice: '₹110',
-        image: 'refence image/image.png',
+        image: 'refence image/image.webp',
         badge: 'Flagship Pouch',
         tag: 'Starter'
     },
@@ -20,7 +21,7 @@ const PRODUCTS = [
         description: 'Our signature sprouted ancient grain mix in a larger family-size pack. High protein, high fiber, 100% natural — perfect for daily nutrition.',
         price: 160,
         inrPrice: '₹160',
-        image: 'refence image/image.png',
+        image: 'refence image/image.webp',
         badge: 'Family Pack',
         tag: 'Family'
     },
@@ -31,7 +32,7 @@ const PRODUCTS = [
         description: 'Made with premium Mapillai Samba rice and traditional Uluntham (black gram). A wholesome traditional blend for daily nutrition.',
         price: 115,
         inrPrice: '₹115',
-        image: 'refence image/image.png',
+        image: 'refence image/image.webp',
         badge: 'Traditional Special',
         tag: 'Starter'
     },
@@ -42,7 +43,7 @@ const PRODUCTS = [
         description: 'Made with premium Mapillai Samba rice and traditional Uluntham (black gram). A wholesome traditional blend for daily nutrition — family size.',
         price: 180,
         inrPrice: '₹180',
-        image: 'refence image/image.png',
+        image: 'refence image/image.webp',
         badge: 'Traditional Special',
         tag: 'Family'
     },
@@ -53,18 +54,20 @@ const PRODUCTS = [
         description: 'Made with premium Mapillai Samba rice and traditional Uluntham (black gram). Best value bulk pack for the whole family.',
         price: 350,
         inrPrice: '₹350',
-        image: 'refence image/image.png',
+        image: 'refence image/image.webp',
         badge: 'Best Value',
         tag: 'Premium'
     }
 ];
 
-export default function Shop({ onProductView, onAddToCart }) {
+export default function Shop({ products = [], onProductView, onAddToCart }) {
     const [selectedCategory, setSelectedCategory] = useState('All');
 
+    const activeProducts = products.length > 0 ? products : PRODUCTS;
+
     const filteredProducts = selectedCategory === 'All'
-        ? PRODUCTS
-        : PRODUCTS.filter(p => p.tag === selectedCategory);
+        ? activeProducts
+        : activeProducts.filter(p => p.tag === selectedCategory);
 
     return (
         <main className="shop-page">
@@ -81,32 +84,32 @@ export default function Shop({ onProductView, onAddToCart }) {
             </div>
 
             {/* Signature Range — animated product showcase */}
-            <ProductShowcase onProductView={onProductView} onAddToCart={onAddToCart} />
+            <ProductShowcase products={products} onProductView={onProductView} onAddToCart={onAddToCart} />
 
             <div className="container">
 
                 {/* Filter Bar */}
                 <div className="shop-filter-bar">
                     <div className="shop-categories">
-                        <button 
+                        <button type="button" 
                             className={`filter-chip ${selectedCategory === 'All' ? 'active' : ''}`}
                             onClick={() => setSelectedCategory('All')}
                         >
                             All Products
                         </button>
-                        <button 
+                        <button type="button" 
                             className={`filter-chip ${selectedCategory === 'Starter' ? 'active' : ''}`}
                             onClick={() => setSelectedCategory('Starter')}
                         >
                             Starter Packs
                         </button>
-                        <button 
+                        <button type="button" 
                             className={`filter-chip ${selectedCategory === 'Family' ? 'active' : ''}`}
                             onClick={() => setSelectedCategory('Family')}
                         >
                             Family Packs
                         </button>
-                        <button 
+                        <button type="button" 
                             className={`filter-chip ${selectedCategory === 'Premium' ? 'active' : ''}`}
                             onClick={() => setSelectedCategory('Premium')}
                         >
@@ -122,26 +125,28 @@ export default function Shop({ onProductView, onAddToCart }) {
                 <div className="shop-grid">
                     {filteredProducts.map(product => (
                         <div className="product-card" key={product.id}>
-                            <div 
+                            <div
                                 className="product-card-image-wrap"
-                                onClick={() => onProductView(product.id)}
+                                {...clickable(() => onProductView(product.id))}
                             >
                                 {product.badge && (
                                     <span className="product-card-badge">{product.badge}</span>
                                 )}
-                                <img 
-                                    src={product.image} 
-                                    alt={product.name} 
+                                <img
+                                    src={product.image}
+                                    alt={product.name}
                                     className="product-card-image"
+                                    loading="lazy"
+                                    decoding="async"
                                     style={product.imageStyle || {}}
                                 />
                             </div>
                             
                             <div className="product-card-info">
                                 <span className="product-card-category">{product.category}</span>
-                                <h3 
+                                <h3
                                     className="product-card-title"
-                                    onClick={() => onProductView(product.id)}
+                                    {...clickable(() => onProductView(product.id))}
                                 >
                                     {product.name}
                                 </h3>
@@ -151,7 +156,7 @@ export default function Shop({ onProductView, onAddToCart }) {
                                     <span className="product-card-price">
                                         {product.inrPrice}
                                     </span>
-                                    <button 
+                                    <button type="button" 
                                         className="btn btn-secondary product-card-btn"
                                         onClick={() => onAddToCart(product.id, product.name, product.price, 'one-time')}
                                     >

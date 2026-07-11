@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
@@ -7,12 +7,41 @@ import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
 import Science from './pages/Science';
 import About from './pages/About';
+import { fetchProducts, fetchSiteConfig, logActivity } from './utils/api';
 
 export default function App() {
     const [page, setPageState] = useState('home');
     const [activeProductId, setActiveProductId] = useState(null);
     const [cart, setCart] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    
+    // Backend Dynamic Content States
+    const [products, setProducts] = useState([]);
+    const [siteConfig, setSiteConfig] = useState(null);
+
+    // Load dynamic data on mount
+    useEffect(() => {
+        const loadInitialData = async () => {
+            const fetchedProducts = await fetchProducts();
+            if (fetchedProducts && fetchedProducts.length > 0) {
+                setProducts(fetchedProducts);
+            }
+            const fetchedConfig = await fetchSiteConfig();
+            if (fetchedConfig) {
+                setSiteConfig(fetchedConfig);
+            }
+        };
+        loadInitialData();
+    }, []);
+
+    // Track page views and active product views
+    useEffect(() => {
+        if (page === 'product' && activeProductId) {
+            logActivity('VIEW_PRODUCT', { product_id: activeProductId });
+        } else {
+            logActivity('PAGE_VIEW', { page_name: page });
+        }
+    }, [page, activeProductId]);
 
     // Scroll to top on page change
     const setPage = (newPage) => {
@@ -33,23 +62,33 @@ export default function App() {
 
             if (existingIndex > -1) {
                 const newCart = [...prevCart];
-                newCart[existingIndex].quantity += quantity;
+                newCart[existingIndex] = {
+                    ...newCart[existingIndex],
+                    quantity: newCart[existingIndex].quantity + quantity,
+                };
                 return newCart;
             } else {
                 return [...prevCart, { id, name, price, option, quantity }];
             }
         });
+        
+        // Log Add to Cart activity
+        logActivity('ADD_TO_CART', { product_id: id, name, price, option, quantity });
         setIsCartOpen(true);
     };
 
     const handleRemoveFromCart = (index) => {
+        const item = cart[index];
+        if (item) {
+            logActivity('REMOVE_FROM_CART', { product_id: item.id, option: item.option, quantity: item.quantity });
+        }
         setCart(prevCart => prevCart.filter((_, idx) => idx !== index));
     };
 
-    const handleCheckout = () => {
-        alert('Thank you for choosing Mangalam Healthy Foods. Directing to our secure checkout terminal...');
+    const handleCheckoutSuccess = () => {
+        logActivity('CHECKOUT_SUCCESS', { cart_items: cart });
         setCart([]);
-        setIsCartOpen(false);
+        // The drawer shows the success confirmation view, so we don't close it instantly.
     };
 
     const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -60,7 +99,11 @@ export default function App() {
                 page={page} 
                 setPage={setPage} 
                 cartCount={totalCartCount} 
-                onCartOpen={() => setIsCartOpen(true)} 
+                onCartOpen={() => {
+                    logActivity('CART_OPEN', { total_items: totalCartCount });
+                    setIsCartOpen(true);
+                }} 
+                siteConfig={siteConfig}
             />
 
             {/* Page Router */}
@@ -69,6 +112,7 @@ export default function App() {
                     setPage={setPage} 
                     onProductView={handleProductView} 
                     onAddToCart={handleAddToCart} 
+                    products={products}
                 />
             )}
             
@@ -76,6 +120,7 @@ export default function App() {
                 <Shop 
                     onProductView={handleProductView} 
                     onAddToCart={handleAddToCart} 
+                    products={products}
                 />
             )}
             
@@ -84,6 +129,7 @@ export default function App() {
                     productId={activeProductId} 
                     onAddToCart={handleAddToCart} 
                     onBack={() => setPage('shop')} 
+                    products={products}
                 />
             )}
             
@@ -97,10 +143,13 @@ export default function App() {
 
             <CartDrawer 
                 isOpen={isCartOpen} 
-                onClose={() => setIsCartOpen(false)} 
+                onClose={() => {
+                    logActivity('CART_CLOSE');
+                    setIsCartOpen(false);
+                }} 
                 cart={cart} 
                 onRemove={handleRemoveFromCart} 
-                onCheckout={handleCheckout} 
+                onCheckout={handleCheckoutSuccess} 
             />
 
             <Footer setPage={setPage} />

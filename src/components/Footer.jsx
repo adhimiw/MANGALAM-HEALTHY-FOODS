@@ -1,11 +1,10 @@
-import React from 'react';
 
 export default function Footer({ setPage }) {
     return (
         <footer className="main-footer">
             <div className="container footer-container">
                 <div className="footer-brand">
-                    <button 
+                    <button type="button" 
                         onClick={() => setPage('home')} 
                         className="logo" 
                         style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
@@ -27,7 +26,7 @@ export default function Footer({ setPage }) {
                         </svg>
                         <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
                             <span className="logo-text" style={{ fontSize: '1.35rem', fontWeight: 800, letterSpacing: '0.03em', color: 'var(--color-primary)', lineHeight: '1.1' }}>MANGALAM</span>
-                            <span className="logo-subtext" style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.22em', color: 'var(--color-accent-gold)', marginTop: '2px' }}>HEALTHY FOODS</span>
+                            <span className="logo-subtext" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.22em', color: 'var(--color-accent-gold)', marginTop: '2px' }}>HEALTHY FOODS</span>
                         </div>
                     </button>
                     <p className="footer-tagline" style={{ marginTop: '16px', fontSize: '0.9rem', color: '#646a66' }}>
@@ -56,9 +55,9 @@ export default function Footer({ setPage }) {
                     
                     <div className="footer-column">
                         <h4>Explore</h4>
-                        <button onClick={() => setPage('shop')}>Our Products</button>
-                        <button onClick={() => setPage('science')}>Why Sprouted?</button>
-                        <button onClick={() => setPage('about')}>Our Story</button>
+                        <button type="button" onClick={() => setPage('shop')}>Our Products</button>
+                        <button type="button" onClick={() => setPage('science')}>Why Sprouted?</button>
+                        <button type="button" onClick={() => setPage('about')}>Our Story</button>
                     </div>
 
                     <div className="footer-column">

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { clickable } from '../clickable';
 
 /* =====================================================================
    PRODUCT SHOWCASE
@@ -15,7 +16,7 @@ const VARIANTS = [
         size: '300g · Flagship Pouch',
         price: 110,
         inr: '₹110',
-        image: 'refence image/image.png',
+        image: 'refence image/image.webp',
         imageStyle: {},
         tint: 'tint-green',
     },
@@ -26,7 +27,7 @@ const VARIANTS = [
         size: '500g · Family Pack',
         price: 160,
         inr: '₹160',
-        image: 'refence image/image.png',
+        image: 'refence image/image.webp',
         imageStyle: {},
         tint: 'tint-gold',
     },
@@ -37,15 +38,31 @@ const VARIANTS = [
         size: '500g · Traditional Special',
         price: 180,
         inr: '₹180',
-        image: 'refence image/image.png',
+        image: 'refence image/image.webp',
         imageStyle: {},
         tint: 'tint-terra',
     },
 ];
 
-export default function ProductShowcase({ onProductView, onAddToCart }) {
+export default function ProductShowcase({ products = [], onProductView, onAddToCart }) {
     const [active, setActive] = useState(0);
-    const v = VARIANTS[active];
+    
+    // Merge backend products into the beautifully styled presentation variants
+    const activeVariants = VARIANTS.map(v => {
+        const backendProd = products.find(p => p.id === v.id);
+        if (backendProd) {
+            return {
+                ...v,
+                name: backendProd.name,
+                price: parseFloat(backendProd.price),
+                inr: backendProd.inr_price || `₹${parseInt(backendProd.price)}`,
+                image: backendProd.image
+            };
+        }
+        return v;
+    });
+
+    const v = activeVariants[active] || VARIANTS[active] || VARIANTS[0];
 
     return (
         <section className="pshow">
@@ -69,14 +86,16 @@ export default function ProductShowcase({ onProductView, onAddToCart }) {
                         className="pshow-product"
                         src={v.image}
                         alt={v.name}
+                        loading="lazy"
+                        decoding="async"
                         style={{ ...v.imageStyle, cursor: 'pointer' }}
-                        onClick={() => onProductView(v.id)}
+                        {...clickable(() => onProductView(v.id))}
                     />
 
                     {/* side rail of variant switches */}
                     <div className="pshow-rail">
-                        {VARIANTS.map((item, i) => (
-                            <button
+                        {activeVariants.map((item, i) => (
+                            <button type="button"
                                 key={item.id}
                                 className={`pshow-rail-btn ${i === active ? 'active' : ''}`}
                                 onClick={() => setActive(i)}
@@ -99,7 +118,7 @@ export default function ProductShowcase({ onProductView, onAddToCart }) {
                     </div>
 
                     <div className="pshow-actions">
-                        <button
+                        <button type="button"
                             className="btn btn-primary"
                             onClick={() => onAddToCart(v.id, v.name, v.price, 'one-time', 1)}
                         >
@@ -109,7 +128,7 @@ export default function ProductShowcase({ onProductView, onAddToCart }) {
                                 <polyline points="12 5 19 12 12 19" />
                             </svg>
                         </button>
-                        <button className="btn btn-secondary" onClick={() => onProductView(v.id)}>
+                        <button type="button" className="btn btn-secondary" onClick={() => onProductView(v.id)}>
                             View Details
                         </button>
                     </div>
@@ -118,3 +137,4 @@ export default function ProductShowcase({ onProductView, onAddToCart }) {
         </section>
     );
 }
+

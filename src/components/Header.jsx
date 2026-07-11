@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-export default function Header({ page, setPage, cartCount, onCartOpen }) {
+export default function Header({ page, setPage, cartCount, onCartOpen, siteConfig }) {
     const [scrolled, setScrolled] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -16,15 +17,21 @@ export default function Header({ page, setPage, cartCount, onCartOpen }) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Navigate and close the mobile menu in one go.
+    const go = (target) => {
+        setPage(target);
+        setMenuOpen(false);
+    };
+
     return (
-        <header className={`main-header ${scrolled ? 'scrolled' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
+        <header className={`main-header ${scrolled ? 'scrolled' : ''} ${menuOpen ? 'menu-open' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Promo Announcement Bar */}
-            <div className="promo-bar" style={{ background: 'var(--color-primary)', color: 'var(--color-primary-light)', width: '100%', textAlign: 'center', padding: '8px 0', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', zIndex: 1001 }}>
+            <div className="promo-bar">
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '9px' }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
                         <path d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6z" />
                     </svg>
-                    FREE SHIPPING ON ORDERS OVER ₹999 / $40 • SAVE 10% ON SUBSCRIPTIONS
+                    {siteConfig?.announcement_text || 'FREE SHIPPING ON ORDERS OVER ₹999 / $40 • SAVE 10% ON SUBSCRIPTIONS'}
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                         <path d="M11 20c0-4 3-9 8-11" />
                         <path d="M11 20C6 18 5 11 10 7c3.6-3.6 9-3 9-3 0 1 .3 6-3 9-2.3 2.3-5 3-5 7z" />
@@ -33,7 +40,7 @@ export default function Header({ page, setPage, cartCount, onCartOpen }) {
             </div>
 
             <div className="container header-container" style={{ width: '100%', height: scrolled ? '64px' : '80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'var(--transition-smooth)' }}>
-                <button 
+                <button type="button" 
                     onClick={() => setPage('home')} 
                     className="logo" 
                     style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
@@ -54,38 +61,41 @@ export default function Header({ page, setPage, cartCount, onCartOpen }) {
                         <path d="M49,70 L51,70 L51,78 L49,78 Z" fill="#1b5a2f" />
                     </svg>
                     <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-                        <span className="logo-text" style={{ fontSize: '1.35rem', fontWeight: 800, letterSpacing: '0.03em', color: 'var(--color-primary)', lineHeight: '1.1' }}>MANGALAM</span>
-                        <span className="logo-subtext" style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.22em', color: 'var(--color-accent-gold)', marginTop: '2px' }}>HEALTHY FOODS</span>
+                        <span className="logo-text" style={{ fontSize: '1.35rem', fontWeight: 800, letterSpacing: '0.03em', color: 'var(--color-primary)', lineHeight: '1.1' }}>{siteConfig?.logo_title || 'MANGALAM'}</span>
+                        <span className="logo-subtext" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.22em', color: 'var(--color-accent-gold)', marginTop: '2px' }}>{siteConfig?.logo_subtitle || 'HEALTHY FOODS'}</span>
                     </div>
                 </button>
                 
-                <nav className="nav-menu">
-                    <button 
-                        onClick={() => setPage('shop')} 
+                <nav className={`nav-menu ${menuOpen ? 'open' : ''}`}>
+                    <button type="button"
+                        onClick={() => go('shop')}
                         className={`nav-link ${page === 'shop' ? 'active' : ''}`}
                     >
                         Our Products
                     </button>
-                    <button 
-                        onClick={() => setPage('science')} 
+                    <button type="button"
+                        onClick={() => go('science')}
                         className={`nav-link ${page === 'science' ? 'active' : ''}`}
                     >
                         Why Sprouted?
                     </button>
-                    <button 
-                        onClick={() => setPage('about')} 
+                    <button type="button"
+                        onClick={() => go('about')}
                         className={`nav-link ${page === 'about' ? 'active' : ''}`}
                     >
                         Our Story
                     </button>
-                </nav>
-                
-                <div className="header-actions">
-                    <button onClick={() => setPage('shop')} className="btn btn-secondary nav-cta">
+                    <button type="button" onClick={() => go('shop')} className="btn btn-primary nav-menu-cta">
                         Shop Now
                     </button>
-                    <button 
-                        className="cart-toggle" 
+                </nav>
+
+                <div className="header-actions">
+                    <button type="button" onClick={() => setPage('shop')} className="btn btn-secondary nav-cta">
+                        Shop Now
+                    </button>
+                    <button type="button"
+                        className="cart-toggle"
                         onClick={onCartOpen}
                         aria-label="View Shopping Cart"
                     >
@@ -95,6 +105,16 @@ export default function Header({ page, setPage, cartCount, onCartOpen }) {
                             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                         </svg>
                         {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+                    </button>
+                    <button type="button"
+                        className="nav-toggle"
+                        onClick={() => setMenuOpen((v) => !v)}
+                        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                        aria-expanded={menuOpen}
+                    >
+                        <span className="nav-toggle-bar" />
+                        <span className="nav-toggle-bar" />
+                        <span className="nav-toggle-bar" />
                     </button>
                 </div>
             </div>

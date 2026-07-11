@@ -1,7 +1,6 @@
-import React, {
+import {
     Children,
     cloneElement,
-    forwardRef,
     isValidElement,
     useEffect,
     useMemo,
@@ -10,14 +9,13 @@ import React, {
 import gsap from 'gsap';
 import './CardSwap.css';
 
-export const Card = forwardRef(({ customClass, ...rest }, ref) => (
+export const Card = ({ customClass, ref, ...rest }) => (
     <div
         ref={ref}
         {...rest}
         className={`card ${customClass ?? ''} ${rest.className ?? ''}`.trim()}
     />
-));
-Card.displayName = 'Card';
+);
 
 const makeSlot = (i, distX, distY, total) => ({
     x: i * distX,
@@ -71,12 +69,11 @@ const CardSwap = ({
               };
 
     const childArr = useMemo(() => Children.toArray(children), [children]);
-    const refs = useMemo(
-        () => childArr.map(() => React.createRef()),
-        [childArr.length]
-    );
 
-    const order = useRef(Array.from({ length: childArr.length }, (_, i) => i));
+    const order = useRef(null);
+    if (order.current === null) {
+        order.current = Array.from({ length: childArr.length }, (_, i) => i);
+    }
 
     const tlRef = useRef(null);
     const intervalRef = useRef();
@@ -85,7 +82,14 @@ const CardSwap = ({
 
     // Manually advance the deck when a card is clicked, so visitors can
     // browse through every banner and read it (instead of navigating away).
-    const advance = () => {
+    // Handled by delegation on the container so cloneElement passes only
+    // plain values (keeps refs out of render-time closures).
+    const handleCardClick = (e) => {
+        const card = e.target.closest('.card');
+        if (!card || !container.current) return;
+        const i = Array.from(container.current.children).indexOf(card);
+        if (i === -1) return;
+        onCardClick?.(i);
         if (tlRef.current && tlRef.current.isActive()) return; // ignore mid-flight clicks
         clearInterval(intervalRef.current);
         swapRef.current?.();
@@ -93,10 +97,13 @@ const CardSwap = ({
     };
 
     useEffect(() => {
-        const total = refs.length;
-        refs.forEach((r, i) =>
+        // Card elements are read from the DOM at commit time instead of via
+        // per-child refs, so no ref values are touched during render.
+        const cards = Array.from(container.current.children);
+        const total = cards.length;
+        cards.forEach((el, i) =>
             placeNow(
-                r.current,
+                el,
                 makeSlot(i, cardDistance, verticalDistance, total),
                 skewAmount
             )
@@ -106,7 +113,7 @@ const CardSwap = ({
             if (order.current.length < 2) return;
 
             const [front, ...rest] = order.current;
-            const elFront = refs[front].current;
+            const elFront = cards[front];
             const tl = gsap.timeline();
             tlRef.current = tl;
 
@@ -118,8 +125,8 @@ const CardSwap = ({
 
             tl.addLabel('promote', `-=${config.durDrop * config.promoteOverlap}`);
             rest.forEach((idx, i) => {
-                const el = refs[idx].current;
-                const slot = makeSlot(i, cardDistance, verticalDistance, refs.length);
+                const el = cards[idx];
+                const slot = makeSlot(i, cardDistance, verticalDistance, cards.length);
                 tl.set(el, { zIndex: slot.zIndex }, 'promote');
                 tl.to(
                     el,
@@ -135,10 +142,10 @@ const CardSwap = ({
             });
 
             const backSlot = makeSlot(
-                refs.length - 1,
+                cards.length - 1,
                 cardDistance,
                 verticalDistance,
-                refs.length
+                cards.length
             );
             tl.addLabel('return', `promote+=${config.durMove * config.returnDelay}`);
             tl.call(
@@ -194,22 +201,20 @@ const CardSwap = ({
         isValidElement(child)
             ? cloneElement(child, {
                   key: i,
-                  ref: refs[i],
                   style: { width, height, ...(child.props.style ?? {}) },
-                  onClick: (e) => {
-                      child.props.onClick?.(e);
-                      onCardClick?.(i);
-                      advance();
-                  },
               })
             : child
     );
 
     return (
+        // Click-to-advance is a mouse convenience; the deck auto-advances and
+        // each card's CTA button stays keyboard-reachable.
         <div
             ref={container}
+            role="presentation"
             className="card-swap-container"
             style={{ width, height }}
+            onClick={handleCardClick}
         >
             {rendered}
         </div>

@@ -3,7 +3,9 @@
     top: 50%;
     right: 0;
     bottom: auto;
-    transform: translate(2%, -52%);
+    /* Pull the deck lower so the upward-stacked cards clear the top nav /
+       "Our Story" link on laptop widths. */
+    transform: translate(2%, -42%);
     transform-origin: center center;
     perspective: 900px;
     overflow: visible;

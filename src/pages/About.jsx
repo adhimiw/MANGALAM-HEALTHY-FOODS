@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function About({ setPage }) {
     return (
@@ -19,14 +18,16 @@ export default function About({ setPage }) {
                         <p>
                             With all your blessings, our journey has now grown into <strong>Mangalam Health Foods Company</strong>, continuing the same tradition with care and honesty, bringing the health benefits of Amutham Sprouted Health Mix to more families.
                         </p>
-                        <button onClick={() => setPage('shop')} className="btn btn-primary" style={{ marginTop: '20px' }}>
+                        <button type="button" onClick={() => setPage('shop')} className="btn btn-primary" style={{ marginTop: '20px' }}>
                             Explore Our Products
                         </button>
                     </div>
                     <div>
-                        <img 
-                            src="about_sprouts.png" 
-                            alt="Mangalam Health Foods — Our Journey" 
+                        <img
+                            src="about_sprouts.webp"
+                            alt="Mangalam Health Foods — Our Journey"
+                            loading="lazy"
+                            decoding="async"
                             style={{ borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-premium)', width: '100%' }}
                         />
                     </div>

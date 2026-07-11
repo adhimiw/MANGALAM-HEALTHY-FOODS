@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { PRODUCTS } from './Shop';
+import { clickable } from '../clickable';
 
-export default function ProductDetail({ productId, onAddToCart, onBack }) {
-    const product = PRODUCTS.find(p => p.id === productId) || PRODUCTS[0];
+export default function ProductDetail({ productId, products = [], onAddToCart, onBack }) {
+    const activeProducts = products.length > 0 ? products : PRODUCTS;
+    const product = activeProducts.find(p => p.id === productId) || activeProducts[0];
     const [purchaseOption, setPurchaseOption] = useState('one-time');
     const [quantity, setQuantity] = useState(1);
 
@@ -10,10 +12,10 @@ export default function ProductDetail({ productId, onAddToCart, onBack }) {
     const currentPrice = purchaseOption === 'subscribe' ? subscriptionPrice : product.price;
 
     const handleQtyChange = (type) => {
-        if (type === 'dec' && quantity > 1) {
-            setQuantity(quantity - 1);
+        if (type === 'dec') {
+            setQuantity(q => (q > 1 ? q - 1 : q));
         } else if (type === 'inc') {
-            setQuantity(quantity + 1);
+            setQuantity(q => q + 1);
         }
     };
 
@@ -21,32 +23,20 @@ export default function ProductDetail({ productId, onAddToCart, onBack }) {
         onAddToCart(product.id, product.name, currentPrice, purchaseOption, quantity);
     };
 
-    const getDetailsForProduct = (p) => {
-        if (p.id.startsWith('health-mix')) {
-            return {
-                badge: 'Sprouted Millets & Grains',
-                lead: 'Our signature sprouted ancient grain mix. Crafted with nine sprouted grains, hygienically processed and enriched with green cardamom. 100% natural, no chemicals or preservatives.',
-                ingredients: 'Pearl Millet (Kambu), Finger Millet (Ragi), Sorghum (Cholam), Bengal Gram (Pottukadalai), Black Gram (Ulundhu), Green Gram (Pasi Payaru), Wheat (Godhumai), Sprouted Roasted Gram, Cardamom.',
-                about: 'Selected premium ancient grains are thoroughly sprout-activated, hygienically processed, and ground to create a complete nutritious elixir. 100% natural, no chemical preservatives or artificial elements added.'
-            };
-        } else {
-            return {
-                badge: 'Traditional Uluntham Mix',
-                lead: 'Made with premium Mapillai Samba rice and traditional Uluntham (black gram). A wholesome traditional blend for daily nutrition — prepared with care using traditional methods.',
-                ingredients: 'Mapillai Samba Rice, Black Gram (Ulundhu), traditional spices.',
-                about: 'Our Mangalam Uluntham Mix is prepared using traditional methods with premium Mapillai Samba rice, known for its rich nutritional profile and health benefits.'
-            };
-        }
+    // Use backend-provided details or fallback to helper
+    const details = {
+        badge: product.details_badge || (product.id.startsWith('health-mix') ? 'Sprouted Millets & Grains' : 'Traditional Uluntham Mix'),
+        lead: product.lead || product.description,
+        ingredients: product.ingredients || (product.id.startsWith('health-mix') ? 'Pearl Millet (Kambu), Finger Millet (Ragi), Sorghum (Cholam), Bengal Gram (Pottukadalai), Black Gram (Ulundhu), Green Gram (Pasi Payaru), Wheat (Godhumai), Sprouted Roasted Gram, Cardamom.' : 'Mapillai Samba Rice, Black Gram (Ulundhu), traditional spices.'),
+        about: product.about || product.description
     };
-
-    const details = getDetailsForProduct(product);
 
     return (
         <main className="pdp-page">
             <div className="container">
                 
                 {/* Back button */}
-                <button onClick={onBack} className="pdp-back">
+                <button type="button" onClick={onBack} className="pdp-back">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
                         <polyline points="12 19 5 12 12 5"></polyline>
@@ -59,10 +49,11 @@ export default function ProductDetail({ productId, onAddToCart, onBack }) {
                     
                     {/* Left Gallery */}
                     <div className="pdp-gallery">
-                        <img 
-                            src={product.image} 
-                            alt={product.name} 
+                        <img
+                            src={product.image}
+                            alt={product.name}
                             className="pdp-gallery-image"
+                            decoding="async"
                             style={product.imageStyle || {}}
                         />
                     </div>
@@ -81,9 +72,9 @@ export default function ProductDetail({ productId, onAddToCart, onBack }) {
 
                         {/* Purchase Options Selector */}
                         <div className="purchase-options">
-                            <div 
+                            <div
                                 className={`purchase-option-card ${purchaseOption === 'subscribe' ? 'active' : ''}`}
-                                onClick={() => setPurchaseOption('subscribe')}
+                                {...clickable(() => setPurchaseOption('subscribe'))}
                             >
                                 <div className="option-left">
                                     <div className="option-radio">
@@ -97,9 +88,9 @@ export default function ProductDetail({ productId, onAddToCart, onBack }) {
                                 <span className="option-price">₹{subscriptionPrice}</span>
                             </div>
 
-                            <div 
+                            <div
                                 className={`purchase-option-card ${purchaseOption === 'one-time' ? 'active' : ''}`}
-                                onClick={() => setPurchaseOption('one-time')}
+                                {...clickable(() => setPurchaseOption('one-time'))}
                             >
                                 <div className="option-left">
                                     <div className="option-radio">
@@ -117,11 +108,11 @@ export default function ProductDetail({ productId, onAddToCart, onBack }) {
                         {/* Action buttons */}
                         <div className="pdp-actions" style={{ marginBottom: '40px' }}>
                             <div className="pdp-qty-select">
-                                <button className="qty-btn" onClick={() => handleQtyChange('dec')}>-</button>
+                                <button type="button" className="qty-btn" onClick={() => handleQtyChange('dec')}>-</button>
                                 <span>{quantity}</span>
-                                <button className="qty-btn" onClick={() => handleQtyChange('inc')}>+</button>
+                                <button type="button" className="qty-btn" onClick={() => handleQtyChange('inc')}>+</button>
                             </div>
-                            <button 
+                            <button type="button" 
                                 className="btn btn-primary pdp-add-btn"
                                 onClick={handleAddToCartClick}
                             >
@@ -144,7 +135,7 @@ export default function ProductDetail({ productId, onAddToCart, onBack }) {
                 </div>
 
                 {/* Preparation & Nutrition Double Column */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '80px', borderTop: '1px solid rgba(7, 56, 32, 0.08)', paddingTop: '60px' }}>
+                <div className="pdp-detail-grid" style={{ borderTop: '1px solid rgba(7, 56, 32, 0.08)', paddingTop: '60px' }}>
                     
                     {/* Column 1: Preparation Method */}
                     <div>

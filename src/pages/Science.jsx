@@ -1,7 +1,5 @@
-import React from 'react';
 
-export default function Science({ setPage }) {
-    const grainData = [
+const grainData = [
         {
             name: 'Greengram (Sprouted)',
             benefits: 'Rich in Vitamin C and antioxidants that boost immunity, repair cells, and keep your skin glowing. It helps detoxify the body, improves oxygen flow, and supports healthy metabolism.',
@@ -40,10 +38,11 @@ export default function Science({ setPage }) {
         {
             name: 'Cardamom',
             benefits: 'A natural digestive aid that relieves bloating, gas, and nausea. It lowers blood pressure, flushes toxins, protects the liver, and calms the mind to promote deep, restful sleep.',
-            extraBenefit: ''
-        }
-    ];
+        extraBenefit: ''
+    }
+];
 
+export default function Science() {
     return (
         <main className="science-page" style={{ paddingTop: 'calc(var(--header-height) + 40px)', paddingBottom: '80px' }}>
             <div className="container">
@@ -58,7 +57,7 @@ export default function Science({ setPage }) {
                         </div>
                         
                         <div className="science-visual">
-                            <img src="science_sprouts.png" alt="Mangalam Sprouted Ingredients" className="science-image" />
+                            <img src="science_sprouts.webp" alt="Mangalam Sprouted Ingredients" className="science-image" loading="lazy" decoding="async" />
                             <div className="science-overlay-card">
                                 <div className="overlay-card-title">Sprouted Nutrition</div>
                                 <div className="overlay-card-stat">8</div>
@@ -78,39 +77,13 @@ export default function Science({ setPage }) {
                         </p>
                     </div>
 
-                    <div className="grain-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                        {grainData.map((grain, idx) => (
-                            <div key={idx} className="grain-card" style={{
-                                padding: '32px',
-                                backgroundColor: 'var(--color-white)',
-                                borderRadius: 'var(--radius-lg)',
-                                border: '1px solid rgba(7, 56, 32, 0.1)',
-                                boxShadow: 'var(--shadow-premium)',
-                                transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-                            }}>
-                                <h3 style={{ 
-                                    fontSize: '1.35rem', 
-                                    color: 'var(--color-primary)', 
-                                    marginBottom: '16px',
-                                    borderBottom: '2px solid var(--color-accent-gold)',
-                                    paddingBottom: '10px'
-                                }}>
-                                    {grain.name}
-                                </h3>
-                                <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--color-text-main)', marginBottom: '14px' }}>
-                                    {grain.benefits}
-                                </p>
+                    <div className="grain-grid">
+                        {grainData.map((grain) => (
+                            <div key={grain.name} className="grain-card">
+                                <h3>{grain.name}</h3>
+                                <p className="grain-benefits">{grain.benefits}</p>
                                 {grain.extraBenefit && (
-                                    <div style={{
-                                        backgroundColor: 'var(--color-primary-light)',
-                                        padding: '12px 16px',
-                                        borderRadius: 'var(--radius-md)',
-                                        borderLeft: '3px solid var(--color-primary)',
-                                        fontSize: '0.9rem',
-                                        lineHeight: '1.5',
-                                        color: 'var(--color-primary)',
-                                        fontWeight: 600
-                                    }}>
+                                    <div className="grain-extra">
                                         <span style={{ fontWeight: 700 }}>➕ Extra Benefit:</span> {grain.extraBenefit}
                                     </div>
                                 )}

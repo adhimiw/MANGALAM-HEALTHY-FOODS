@@ -1,4 +1,4 @@
-import React from 'react';
+import { clickable } from '../clickable';
 
 /* =====================================================================
    LUXURY PODIUM SHOWCASE
@@ -55,7 +55,7 @@ export function LuxuryShowcase({ onProductView, onAddToCart }) {
                         </div>
 
                         <div className="hero-actions">
-                            <button
+                            <button type="button"
                                 className="btn btn-primary"
                                 onClick={() => onAddToCart('health-mix-300g', 'Amutham Sprouted Health Mix (300g)', 110, 'one-time', 1)}
                             >
@@ -65,7 +65,7 @@ export function LuxuryShowcase({ onProductView, onAddToCart }) {
                                     <polyline points="12 5 19 12 12 19" />
                                 </svg>
                             </button>
-                            <button className="btn btn-text" onClick={() => onProductView('health-mix-300g')}>
+                            <button type="button" className="btn btn-text" onClick={() => onProductView('health-mix-300g')}>
                                 View full details
                             </button>
                         </div>
@@ -73,15 +73,19 @@ export function LuxuryShowcase({ onProductView, onAddToCart }) {
 
                     <div className="podium-stage liquid-glass">
                         <img
-                            src="assets/images/autumn_podium.jpg"
+                            src="assets/images/autumn_podium.webp"
                             alt="Seasonal harvest display podium"
                             className="podium-stage-bg"
+                            loading="lazy"
+                            decoding="async"
                         />
                         <img
-                            src="refence image/image.png"
+                            src="refence image/image.webp"
                             alt="Amutham Sprouted Health Mix pouch on display"
                             className="podium-product"
-                            onClick={() => onProductView('health-mix-300g')}
+                            loading="lazy"
+                            decoding="async"
+                            {...clickable(() => onProductView('health-mix-300g'))}
                             style={{ cursor: 'pointer' }}
                         />
                         <div className="podium-price-tag liquid-glass">
@@ -181,8 +185,10 @@ export function BrandStory({ setPage }) {
                 <div className="story-grid">
                     <div className="story-visual liquid-glass">
                         <img
-                            src="assets/images/marketing_branding.jpg"
+                            src="assets/images/marketing_branding.webp"
                             alt="Building a trusted, family-loved health brand"
+                            loading="lazy"
+                            decoding="async"
                         />
                         <div className="story-visual-badge liquid-glass">
                             <span className="sb-stat">20+ Years</span>
@@ -216,7 +222,7 @@ export function BrandStory({ setPage }) {
                             </div>
                         </div>
 
-                        <button onClick={() => setPage('about')} className="btn btn-secondary" style={{ marginTop: '28px' }}>
+                        <button type="button" onClick={() => setPage('about')} className="btn btn-secondary" style={{ marginTop: '28px' }}>
                             Read the full story
                         </button>
                     </div>

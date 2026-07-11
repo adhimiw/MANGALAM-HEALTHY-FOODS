@@ -1,4 +1,3 @@
-import React from 'react';
 import CardSwap, { Card } from './CardSwap';
 
 const Arrow = () => (
@@ -10,7 +9,7 @@ const Arrow = () => (
 
 const BANNERS = [
     {
-        media: 'assets/images/autumn_podium.jpg',
+        media: 'assets/images/autumn_podium.webp',
         badge: 'Our traditional taste',
         title: ['100% Natural, ', 'No Preservatives'],
         desc: 'Every grain blend is 100% natural, prepared with traditional methods that bring real taste and real nutrition.',
@@ -18,7 +17,7 @@ const BANNERS = [
         page: 'shop',
     },
     {
-        media: 'about_sprouts.png',
+        media: 'about_sprouts.webp',
         badge: 'Your health is our nation\'s priority',
         title: ['Rich in Protein ', '& High Fiber'],
         desc: 'Our health mixes are crafted to give your family strength, energy, and wellness every day.',
@@ -26,7 +25,7 @@ const BANNERS = [
         page: 'shop',
     },
     {
-        media: 'science_sprouts.png',
+        media: 'science_sprouts.webp',
         badge: 'The Science',
         title: ['3× more ', 'bioavailable'],
         desc: 'Sprout-activation neutralises phytic acid to unlock real mineral uptake — no chemicals, no shortcuts.',
@@ -34,7 +33,7 @@ const BANNERS = [
         page: 'science',
     },
     {
-        media: 'refence image/image.png',
+        media: 'refence image/image.webp',
         badge: 'We serve with love and transparency',
         title: ['From Our Kitchen ', 'to Your Home'],
         desc: 'What began as a homemade mix is now a trusted tradition for hundreds of families.',
@@ -61,11 +60,11 @@ export default function LuxuryHero({ setPage }) {
                     </p>
 
                     <div className="hero-actions">
-                        <button onClick={() => setPage('shop')} className="btn btn-primary">
+                        <button type="button" onClick={() => setPage('shop')} className="btn btn-primary">
                             <span>Shop Sprouted Mix</span>
                             <span className="btn-arrow"><Arrow /></span>
                         </button>
-                        <button onClick={() => setPage('science')} className="btn btn-text">
+                        <button type="button" onClick={() => setPage('science')} className="btn btn-text">
                             Why Sprouted?
                         </button>
                     </div>
@@ -98,9 +97,16 @@ export default function LuxuryHero({ setPage }) {
                         pauseOnHover={true}
                     >
                         {BANNERS.map((b, i) => (
-                            <Card key={i}>
+                            <Card key={b.badge}>
                                 <div className="swap-card">
-                                    <img className="swap-card-media" src={b.media} alt="" />
+                                    <img
+                                        className="swap-card-media"
+                                        src={b.media}
+                                        alt=""
+                                        decoding="async"
+                                        loading={i === 0 ? 'eager' : 'lazy'}
+                                        fetchPriority={i === 0 ? 'high' : 'low'}
+                                    />
                                     <div className="swap-card-scrim" />
                                     <div className="swap-card-body">
                                         <span className="swap-card-badge">{b.badge}</span>
@@ -109,7 +115,7 @@ export default function LuxuryHero({ setPage }) {
                                             <em>{b.title[1]}</em>
                                         </h3>
                                         <p className="swap-card-desc">{b.desc}</p>
-                                        <button
+                                        <button type="button"
                                             className="swap-card-cta"
                                             onClick={(e) => {
                                                 e.stopPropagation();
