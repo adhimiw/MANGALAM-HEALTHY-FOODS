@@ -2,6 +2,8 @@
 
 This repository contains the dynamic Vite + React frontend integrated with a Python Django backend configured for Vercel serverless hosting, OpenWA WhatsApp gateway notification dispatch, detailed customer activity tracking logs, and a dynamic coupon discount validation system.
 
+> **Deploying?** See [DEPLOYMENT.md](./DEPLOYMENT.md) for the complete production guide: Vercel (frontend + Django), OpenWA gateway setup, QR linking, and troubleshooting.
+
 ---
 
 ## 🏗️ Architecture
