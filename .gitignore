@@ -23,7 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Local-only, still in development
-backend/
+# Third-party libraries (reinstall, don't track)
 OpenWA/
+
 screenshot_*.png
