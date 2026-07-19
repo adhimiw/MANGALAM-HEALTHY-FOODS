@@ -84,6 +84,22 @@ export async function fetchProducts() {
 }
 
 /**
+ * Fetch active banners (optionally by placement, e.g. 'hero')
+ */
+export async function fetchBanners(placement = '') {
+    try {
+        const qs = placement ? `?placement=${encodeURIComponent(placement)}` : '';
+        const response = await fetch(`${API_BASE}/api/banners/${qs}`);
+        if (!response.ok) throw new Error('Failed to fetch banners');
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Error fetching banners:', error);
+        return [];
+    }
+}
+
+/**
  * Fetch public site settings from Django backend
  */
 export async function fetchSiteConfig() {

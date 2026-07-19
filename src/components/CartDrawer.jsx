@@ -190,13 +190,14 @@ export default function CartDrawer({ isOpen, onClose, cart, onRemove, onCheckout
                             )}
 
                             <div>
-                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px', color: 'var(--color-primary)' }}>
+                                <label htmlFor="cart-name" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px', color: 'var(--color-primary)' }}>
                                     Full Name *
                                 </label>
-                                <input 
-                                    type="text" 
-                                    required 
-                                    value={name} 
+                                <input
+                                    id="cart-name"
+                                    type="text"
+                                    required
+                                    value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="Adhithan Dev"
                                     style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #c9d1cc', backgroundColor: '#fcfdfd', color: '#1b231f', fontSize: '0.95rem' }}
@@ -204,13 +205,14 @@ export default function CartDrawer({ isOpen, onClose, cart, onRemove, onCheckout
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px', color: 'var(--color-primary)' }}>
+                                <label htmlFor="cart-mobile" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px', color: 'var(--color-primary)' }}>
                                     Mobile Number *
                                 </label>
-                                <input 
-                                    type="tel" 
-                                    required 
-                                    value={mobile} 
+                                <input
+                                    id="cart-mobile"
+                                    type="tel"
+                                    required
+                                    value={mobile}
                                     onChange={(e) => setMobile(e.target.value)}
                                     placeholder="e.g. +91 98765 43210"
                                     style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #c9d1cc', backgroundColor: '#fcfdfd', color: '#1b231f', fontSize: '0.95rem' }}
@@ -218,13 +220,14 @@ export default function CartDrawer({ isOpen, onClose, cart, onRemove, onCheckout
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px', color: 'var(--color-primary)' }}>
+                                <label htmlFor="cart-address" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px', color: 'var(--color-primary)' }}>
                                     Delivery Address *
                                 </label>
-                                <textarea 
-                                    required 
+                                <textarea
+                                    id="cart-address"
+                                    required
                                     rows="3"
-                                    value={address} 
+                                    value={address}
                                     onChange={(e) => setAddress(e.target.value)}
                                     placeholder="Enter your complete doorstep address..."
                                     style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #c9d1cc', backgroundColor: '#fcfdfd', color: '#1b231f', fontSize: '0.95rem', resize: 'vertical' }}
@@ -233,13 +236,14 @@ export default function CartDrawer({ isOpen, onClose, cart, onRemove, onCheckout
 
                             {/* Coupon Input */}
                             <div style={{ borderTop: '1px solid #e9ebe9', paddingTop: '15px' }}>
-                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px', color: 'var(--color-primary)' }}>
+                                <label htmlFor="cart-coupon" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px', color: 'var(--color-primary)' }}>
                                     Promo Code / Coupon
                                 </label>
                                 <div style={{ display: 'flex', gap: '8px' }}>
-                                    <input 
-                                        type="text" 
-                                        value={couponCode} 
+                                    <input
+                                        id="cart-coupon"
+                                        type="text"
+                                        value={couponCode}
                                         onChange={(e) => setCouponCode(e.target.value)}
                                         placeholder="e.g. WELCOME10"
                                         style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #c9d1cc', textTransform: 'uppercase', fontSize: '0.9rem' }}

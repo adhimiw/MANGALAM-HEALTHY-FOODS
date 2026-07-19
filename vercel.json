@@ -46,6 +46,10 @@
       "dest": "/refence image/$1"
     },
     {
+      "src": "/(.*\\.(webp|png|jpe?g|svg|ico|txt|xml|json))",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }

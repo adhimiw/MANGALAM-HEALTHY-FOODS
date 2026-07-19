@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import CardSwap, { Card } from './CardSwap';
+import { fetchBanners } from '../utils/api';
 
 const Arrow = () => (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -43,6 +45,23 @@ const BANNERS = [
 ];
 
 export default function LuxuryHero({ setPage }) {
+    // Client-managed banners from the backend; fall back to the built-in set.
+    const [banners, setBanners] = useState(BANNERS);
+    useEffect(() => {
+        fetchBanners('hero').then((rows) => {
+            if (rows.length) {
+                setBanners(rows.map((b) => ({
+                    media: b.image,
+                    badge: b.badge,
+                    title: [b.title, b.subtitle || ''],
+                    desc: b.description,
+                    cta: b.cta_text || 'Learn more',
+                    page: b.cta_page || 'shop',
+                })));
+            }
+        });
+    }, []);
+
     return (
         <section className="lux-hero">
             <div className="container lux-hero-inner">
@@ -96,13 +115,13 @@ export default function LuxuryHero({ setPage }) {
                         delay={4500}
                         pauseOnHover={true}
                     >
-                        {BANNERS.map((b, i) => (
-                            <Card key={b.badge}>
+                        {banners.map((b, i) => (
+                            <Card key={b.media}>
                                 <div className="swap-card">
                                     <img
                                         className="swap-card-media"
                                         src={b.media}
-                                        alt=""
+                                        alt={[b.badge, ...(Array.isArray(b.title) ? b.title : [b.title])].filter(Boolean).join(' — ')}
                                         decoding="async"
                                         loading={i === 0 ? 'eager' : 'lazy'}
                                         fetchPriority={i === 0 ? 'high' : 'low'}

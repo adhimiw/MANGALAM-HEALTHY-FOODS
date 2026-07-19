@@ -60,7 +60,9 @@ const PRODUCTS = [
     }
 ];
 
-export default function Shop({ products = [], onProductView, onAddToCart }) {
+const EMPTY = []; // stable default so it doesn't break child memoization
+
+export default function Shop({ products = EMPTY, onProductView, onAddToCart }) {
     const [selectedCategory, setSelectedCategory] = useState('All');
 
     const activeProducts = products.length > 0 ? products : PRODUCTS;

@@ -97,6 +97,12 @@ const CardSwap = ({
     };
 
     useEffect(() => {
+        // Skip GSAP during prerender (?prerender flag) so the snapshot's DOM
+        // matches React's initial render — otherwise baked inline transforms
+        // break hydration. GSAP runs normally for real visitors.
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('prerender')) {
+            return;
+        }
         // Card elements are read from the DOM at commit time instead of via
         // per-child refs, so no ref values are touched during render.
         const cards = Array.from(container.current.children);

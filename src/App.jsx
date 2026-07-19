@@ -43,6 +43,24 @@ export default function App() {
         }
     }, [page, activeProductId]);
 
+    // Capture clicks for the heatmap (skipped during prerender snapshot).
+    useEffect(() => {
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('prerender')) return;
+        const onClick = (e) => {
+            logActivity('CLICK', {
+                x: Math.round(e.pageX),
+                y: Math.round(e.pageY),
+                vw: window.innerWidth,
+                dh: document.documentElement.scrollHeight,
+                page,
+                tag: e.target && e.target.tagName,
+                txt: (e.target && e.target.innerText ? e.target.innerText : '').slice(0, 40),
+            });
+        };
+        window.addEventListener('click', onClick);
+        return () => window.removeEventListener('click', onClick);
+    }, [page]);
+
     // Scroll to top on page change
     const setPage = (newPage) => {
         setPageState(newPage);
