@@ -8,13 +8,10 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "get-design": "node get_design.cjs",
-    "prerender": "node scripts/prerender.mjs",
-    "postbuild": "node scripts/prerender.mjs",
-    "vercel-build": "npx playwright install chromium && npm run build"
+    "get-design": "node get_design.cjs"
   },
   "dependencies": {
-    "gsap": "^3.15.0",
+    "lucide-react": "^1.31.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },

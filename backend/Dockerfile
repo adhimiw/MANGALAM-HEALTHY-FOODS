@@ -1,18 +1,29 @@
-FROM python:3.12-slim
+FROM php:8.3-cli-alpine
 
-WORKDIR /app
+# Install system dependencies & required PHP extensions for Laravel
+RUN apk add --no-cache \
+    curl \
+    git \
+    unzip \
+    libpng-dev \
+    libxml2-dev \
+    oniguruma-dev \
+    libzip-dev \
+    zip
 
-# Pillow build deps for image validation/WebP conversion (api/services/images.py)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libjpeg62-turbo-dev \
-    zlib1g-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN docker-php-ext-install pdo_mysql mbstring bcmath gd zip
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Get latest Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+WORKDIR /var/www/html
+
+# Copy application files
 COPY . .
+
+# Ensure storage & bootstrap permissions
+RUN chmod -R 777 storage bootstrap/cache
 
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["sh", "-c", "composer install --no-interaction --prefer-dist && php artisan key:generate --force && php artisan storage:link --force && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"]

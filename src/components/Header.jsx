@@ -1,12 +1,17 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
-export default function Header({ page, setPage, cartCount, onCartOpen, siteConfig }) {
+export default function Header({ page, setPage, products = [], cartCount, onCartOpen, onProductView, user, onAuthOpen, onLogout }) {
+    const { lang, toggleLanguage, t } = useLanguage();
     const [scrolled, setScrolled] = useState(false);
-    const [menuOpen, setMenuOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+    const searchContainerRef = useRef(null);
+    const userMenuRef = useRef(null);
 
     useEffect(() => {
         const handleScroll = () => {
-            if (window.scrollY > 50) {
+            if (window.scrollY > 20) {
                 setScrolled(true);
             } else {
                 setScrolled(false);
@@ -17,107 +22,250 @@ export default function Header({ page, setPage, cartCount, onCartOpen, siteConfi
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Navigate and close the mobile menu in one go.
-    const go = (target) => {
-        setPage(target);
-        setMenuOpen(false);
+    // Close search dropdown & user dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+                setSearchQuery('');
+            }
+            if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+                setUserDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const searchResults = searchQuery.trim() === ''
+        ? []
+        : (products || []).filter(p => 
+            (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (p.subtitle || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (p.category || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (p.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+          );
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchResults.length > 0) {
+            onProductView(searchResults[0].id);
+            setSearchQuery('');
+        } else if (searchQuery.trim()) {
+            setPage('shop');
+        }
+    };
+
+    const handleProductSelect = (productId) => {
+        if (onProductView) {
+            onProductView(productId);
+        } else {
+            setPage('shop');
+        }
+        setSearchQuery('');
     };
 
     return (
-        <header className={`main-header ${scrolled ? 'scrolled' : ''} ${menuOpen ? 'menu-open' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
-            {/* Promo Announcement Bar */}
-            <div className="promo-bar">
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '9px' }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-                        <path d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6z" />
-                    </svg>
-                    {siteConfig?.announcement_text || 'FREE SHIPPING ON ORDERS OVER ₹999 / $40 • SAVE 10% ON SUBSCRIPTIONS'}
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                        <path d="M11 20c0-4 3-9 8-11" />
-                        <path d="M11 20C6 18 5 11 10 7c3.6-3.6 9-3 9-3 0 1 .3 6-3 9-2.3 2.3-5 3-5 7z" />
-                    </svg>
-                </span>
-            </div>
-
-            <div className="container header-container" style={{ width: '100%', height: scrolled ? '64px' : '80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'var(--transition-smooth)' }}>
-                <button type="button" 
-                    onClick={() => setPage('home')} 
-                    className="logo" 
-                    style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                >
-                    <svg width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {/* Leaves */}
-                        <path d="M42,70 C24,66 22,44 36,32 C27,42 29,62 42,70 Z" fill="#2c7844" />
-                        <path d="M32,74 C10,65 14,38 28,24 C16,36 20,60 32,74 Z" fill="#1b5a2f" />
-                        <path d="M58,70 C76,66 78,44 64,32 C73,42 71,62 58,70 Z" fill="#2c7844" />
-                        <path d="M68,74 C90,65 86,38 72,24 C84,36 80,60 68,74 Z" fill="#1b5a2f" />
-                        {/* Gold Sprout Grains */}
-                        <path d="M50,18 C46,24 46,32 50,38 C54,32 54,24 50,18 Z" fill="#e8ab10" />
-                        <path d="M48,32 C41,34 37,41 41,48 C46,47 48,41 48,32 Z" fill="#f4b905" />
-                        <path d="M52,32 C59,34 63,41 59,48 C54,47 52,41 52,32 Z" fill="#f4b905" />
-                        <path d="M48,46 C41,48 37,55 41,62 C46,61 48,55 48,46 Z" fill="#f4b905" />
-                        <path d="M52,46 C59,48 63,55 59,62 C54,61 52,55 52,46 Z" fill="#f4b905" />
-                        {/* Base stem */}
-                        <path d="M49,70 L51,70 L51,78 L49,78 Z" fill="#1b5a2f" />
-                    </svg>
-                    <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
-                        <span className="logo-text" style={{ fontSize: '1.35rem', fontWeight: 800, letterSpacing: '0.03em', color: 'var(--color-primary)', lineHeight: '1.1' }}>{siteConfig?.logo_title || 'MANGALAM'}</span>
-                        <span className="logo-subtext" style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.22em', color: 'var(--color-accent-gold)', marginTop: '2px' }}>{siteConfig?.logo_subtitle || 'HEALTHY FOODS'}</span>
-                    </div>
-                </button>
-                
-                <nav className={`nav-menu ${menuOpen ? 'open' : ''}`}>
-                    <button type="button"
-                        onClick={() => go('shop')}
-                        className={`nav-link ${page === 'shop' ? 'active' : ''}`}
-                    >
-                        Our Products
-                    </button>
-                    <button type="button"
-                        onClick={() => go('science')}
-                        className={`nav-link ${page === 'science' ? 'active' : ''}`}
-                    >
-                        Why Sprouted?
-                    </button>
-                    <button type="button"
-                        onClick={() => go('about')}
-                        className={`nav-link ${page === 'about' ? 'active' : ''}`}
-                    >
-                        Our Story
-                    </button>
-                    <button type="button" onClick={() => go('shop')} className="btn btn-primary nav-menu-cta">
-                        Shop Now
-                    </button>
-                </nav>
-
-                <div className="header-actions">
-                    <button type="button" onClick={() => setPage('shop')} className="btn btn-secondary nav-cta">
-                        Shop Now
-                    </button>
-                    <button type="button"
-                        className="cart-toggle"
-                        onClick={onCartOpen}
-                        aria-label="View Shopping Cart"
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="9" cy="21" r="1"></circle>
-                            <circle cx="20" cy="21" r="1"></circle>
-                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                        </svg>
-                        {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
-                    </button>
-                    <button type="button"
-                        className="nav-toggle"
-                        onClick={() => setMenuOpen((v) => !v)}
-                        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-                        aria-expanded={menuOpen}
-                    >
-                        <span className="nav-toggle-bar" />
-                        <span className="nav-toggle-bar" />
-                        <span className="nav-toggle-bar" />
-                    </button>
+        <header className={`main-header ${scrolled ? 'scrolled' : ''}`}>
+            {/* Infinite Marquee Running Announcement Bar */}
+            <div className="announcement-marquee-bar">
+                <div className="marquee-track">
+                    <span>{t('marqueeText1')}</span>
+                    <span className="marquee-dot">•</span>
+                    <span>{t('marqueeText2')}</span>
+                    <span className="marquee-dot">•</span>
+                    <span>{t('marqueeText3')}</span>
+                    <span className="marquee-dot">•</span>
+                    <span>{t('marqueeText4')}</span>
+                    <span className="marquee-dot">•</span>
+                </div>
+                <div className="marquee-track" aria-hidden="true">
+                    <span>{t('marqueeText1')}</span>
+                    <span className="marquee-dot">•</span>
+                    <span>{t('marqueeText2')}</span>
+                    <span className="marquee-dot">•</span>
+                    <span>{t('marqueeText3')}</span>
+                    <span className="marquee-dot">•</span>
+                    <span>{t('marqueeText4')}</span>
+                    <span className="marquee-dot">•</span>
                 </div>
             </div>
+
+            {/* Top Row: Search | Centered Logo | Right Action Icons */}
+            <div className="header-top-row">
+                <div className="container header-top-container">
+                    
+                    {/* Left: Search Bar with Autocomplete Dropdown */}
+                    <div ref={searchContainerRef} className="header-search-wrapper" style={{ position: 'relative', width: '100%', maxWidth: '280px' }}>
+                        <form onSubmit={handleSearchSubmit} className="header-search-container">
+                            <input 
+                                type="text"
+                                placeholder={t('searchPlaceholder')}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="header-search-input"
+                            />
+                            <svg className="header-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </form>
+
+                        {/* Interactive Search Autocomplete Dropdown */}
+                        {searchQuery.trim() !== '' && (
+                            <div className="header-search-results-dropdown">
+                                {searchResults.length > 0 ? (
+                                    searchResults.map(prod => (
+                                        <div 
+                                            key={prod.id}
+                                            className="search-result-item"
+                                            onClick={() => handleProductSelect(prod.id)}
+                                        >
+                                            <img src={prod.image} alt={prod.name} className="search-result-thumb" />
+                                            <div className="search-result-info">
+                                                <span className="search-result-title">{prod.name}</span>
+                                                <span className="search-result-sub">{prod.subtitle}</span>
+                                            </div>
+                                            <span className="search-result-price">{prod.inrPrice}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="search-no-results">
+                                        No products found matching "{searchQuery}".
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Center: Main Logo Image */}
+                    <button 
+                        onClick={() => setPage('home')} 
+                        className="header-logo-centered"
+                        aria-label="Mangalam Healthy Foods Home"
+                    >
+                        <img src="/mangalam_logo.png" alt="Mangalam Healthy Foods Logo" />
+                    </button>
+
+                    {/* Right: User Account & Cart Icons */}
+                    <div className="header-right-actions">
+
+                        {/* User Account / Profile Dropdown */}
+                        <div 
+                            ref={userMenuRef} 
+                            className="header-user-wrapper" 
+                            style={{ position: 'relative' }}
+                            onMouseEnter={() => user && setUserDropdownOpen(true)}
+                            onMouseLeave={() => user && setUserDropdownOpen(false)}
+                        >
+                            <button 
+                                className={`header-icon-btn ${user ? 'user-logged-in' : ''}`} 
+                                onClick={() => {
+                                    if (user) {
+                                        setUserDropdownOpen(!userDropdownOpen);
+                                    } else {
+                                        onAuthOpen();
+                                    }
+                                }}
+                                aria-label="User Account"
+                                title={user ? `Signed in as ${user.full_name || user.name || user.email}` : 'Login / Register'}
+                            >
+                                {user ? (
+                                    <span className="header-user-avatar-initials">
+                                        {(user.full_name || user.name || user.email || 'ME').slice(0, 2).toUpperCase()}
+                                    </span>
+                                ) : (
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                )}
+                            </button>
+
+                            {/* Luxury User Hover Dropdown Menu */}
+                            {user && userDropdownOpen && (
+                                <div className="header-user-dropdown">
+                                    <div className="header-user-dropdown-info">
+                                        <span className="user-drop-name">{user.full_name || user.name || 'Valued Member'}</span>
+                                        <span className="user-drop-email">{user.email}</span>
+                                    </div>
+                                    <div className="header-user-dropdown-divider"></div>
+                                    <button 
+                                        className="header-user-drop-btn"
+                                        onClick={() => {
+                                            setPage('profile');
+                                            setUserDropdownOpen(false);
+                                        }}
+                                    >
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                        <span>View Profile & Settings</span>
+                                    </button>
+                                    <button 
+                                        className="header-user-drop-btn logout"
+                                        onClick={() => {
+                                            if (onLogout) onLogout();
+                                            setUserDropdownOpen(false);
+                                        }}
+                                    >
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                            <polyline points="16 17 21 12 16 7"></polyline>
+                                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                                        </svg>
+                                        <span>Logout</span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <button 
+                            className="header-icon-btn" 
+                            onClick={onCartOpen}
+                            aria-label="Shopping Cart"
+                        >
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="9" cy="21" r="1"></circle>
+                                <circle cx="20" cy="21" r="1"></circle>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                            </svg>
+                            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            {/* Bottom Row: Main Navigation Links Bar */}
+            <nav className="header-bottom-nav">
+                <div className="container bottom-nav-container">
+                    <button 
+                        onClick={() => setPage('shop')} 
+                        className={`target-nav-link ${page === 'shop' ? 'active' : ''}`}
+                    >
+                        {t('navProducts')}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+
+                    <button 
+                        onClick={() => setPage('science')} 
+                        className={`target-nav-link ${page === 'science' ? 'active' : ''}`}
+                    >
+                        {t('navWhySprouted')}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+
+                    <button 
+                        onClick={() => setPage('about')} 
+                        className={`target-nav-link ${page === 'about' ? 'active' : ''}`}
+                    >
+                        {t('navOurStory')}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                </div>
+            </nav>
         </header>
     );
 }
+

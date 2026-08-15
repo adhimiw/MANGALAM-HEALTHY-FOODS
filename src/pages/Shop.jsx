@@ -1,177 +1,138 @@
-import { useState } from 'react';
-import ProductShowcase from '../components/ProductShowcase';
-import { clickable } from '../clickable';
+import React, { useState, useEffect } from 'react';
+import ProductCard from '../components/ProductCard';
+import { useLanguage } from '../context/LanguageContext';
+import { fetchCategoriesApi, fetchProductsApi } from '../services/api';
 
-const PRODUCTS = [
-    {
-        id: 'health-mix-300g',
-        name: 'Amutham Sprouted Health Mix (300g)',
-        category: 'Sprouted Millets & Grains',
-        description: 'Our signature sprouted ancient grain mix. Crafted with Pearl Millet, Finger Millet, Sorghum, and legumes — hygienically processed and enriched with green cardamom. 100% natural, no chemicals or preservatives.',
-        price: 110,
-        inrPrice: '₹110',
-        image: 'refence image/image.webp',
-        badge: 'Flagship Pouch',
-        tag: 'Starter'
-    },
-    {
-        id: 'health-mix-500g',
-        name: 'Amutham Sprouted Health Mix (500g)',
-        category: 'Sprouted Millets & Grains',
-        description: 'Our signature sprouted ancient grain mix in a larger family-size pack. High protein, high fiber, 100% natural — perfect for daily nutrition.',
-        price: 160,
-        inrPrice: '₹160',
-        image: 'refence image/image.webp',
-        badge: 'Family Pack',
-        tag: 'Family'
-    },
-    {
-        id: 'uluntham-300g',
-        name: 'Mangalam Uluntham Mix (300g)',
-        category: 'Traditional Uluntham Mix',
-        description: 'Made with premium Mapillai Samba rice and traditional Uluntham (black gram). A wholesome traditional blend for daily nutrition.',
-        price: 115,
-        inrPrice: '₹115',
-        image: 'refence image/image.webp',
-        badge: 'Traditional Special',
-        tag: 'Starter'
-    },
-    {
-        id: 'uluntham-500g',
-        name: 'Mangalam Uluntham Mix (500g)',
-        category: 'Traditional Uluntham Mix',
-        description: 'Made with premium Mapillai Samba rice and traditional Uluntham (black gram). A wholesome traditional blend for daily nutrition — family size.',
-        price: 180,
-        inrPrice: '₹180',
-        image: 'refence image/image.webp',
-        badge: 'Traditional Special',
-        tag: 'Family'
-    },
-    {
-        id: 'uluntham-1kg',
-        name: 'Mangalam Uluntham Mix (1kg)',
-        category: 'Traditional Uluntham Mix',
-        description: 'Made with premium Mapillai Samba rice and traditional Uluntham (black gram). Best value bulk pack for the whole family.',
-        price: 350,
-        inrPrice: '₹350',
-        image: 'refence image/image.webp',
-        badge: 'Best Value',
-        tag: 'Premium'
-    }
-];
+export const PRODUCTS = [];
 
-const EMPTY = []; // stable default so it doesn't break child memoization
+export default function Shop({
+    products: propProducts,
+    loadingProducts: propLoading,
+    onProductView,
+    onAddToCart,
+    selectedCategory = 'All Products',
+    setSelectedCategory
+}) {
+    const { t } = useLanguage();
+    const [localCategory, setLocalCategory] = useState(selectedCategory);
+    const [categories, setCategories] = useState([{ id: 'all', name: 'All Products' }]);
+    const [productList, setProductList] = useState(propProducts || []);
+    const [loading, setLoading] = useState(propLoading !== undefined ? propLoading : (!propProducts || propProducts.length === 0));
 
-export default function Shop({ products = EMPTY, onProductView, onAddToCart }) {
-    const [selectedCategory, setSelectedCategory] = useState('All');
+    useEffect(() => {
+        if (propProducts && propProducts.length > 0) {
+            setProductList(propProducts);
+            setLoading(false);
+        } else {
+            async function loadProducts() {
+                setLoading(true);
+                const res = await fetchProductsApi();
+                if (res.success && res.data) {
+                    setProductList(res.data);
+                }
+                setLoading(false);
+            }
+            loadProducts();
+        }
+    }, [propProducts]);
 
-    const activeProducts = products.length > 0 ? products : PRODUCTS;
+    useEffect(() => {
+        async function loadDynamicCategories() {
+            const res = await fetchCategoriesApi();
+            if (res.success && res.data) {
+                setCategories([
+                    { id: 'all', name: 'All Products' },
+                    ...res.data
+                ]);
+            }
+        }
+        loadDynamicCategories();
+    }, []);
 
-    const filteredProducts = selectedCategory === 'All'
-        ? activeProducts
-        : activeProducts.filter(p => p.tag === selectedCategory);
+    const activeCategory = setSelectedCategory ? selectedCategory : localCategory;
+
+    const handleCategoryClick = (catName) => {
+        if (setSelectedCategory) {
+            setSelectedCategory(catName);
+        } else {
+            setLocalCategory(catName);
+        }
+    };
+
+    const filteredProducts = productList.filter(product => {
+        if (!activeCategory || activeCategory === 'All Products' || activeCategory === 'All') return true;
+        const activeLower = activeCategory.toLowerCase();
+        const catLower = (product.category || '').toLowerCase();
+        const nameLower = (product.name || '').toLowerCase();
+        return catLower.includes(activeLower) || activeLower.includes(catLower) || nameLower.includes(activeLower);
+    });
 
     return (
         <main className="shop-page">
             <div className="container">
-                
+
                 {/* Shop Header */}
-                <div style={{ marginBottom: '60px', textAlign: 'center' }}>
-                    <span className="section-subtitle">THE COLLECTION</span>
-                    <h1 style={{ fontSize: '3.5rem', marginBottom: '20px' }}>Our Sprouted Products</h1>
-                    <p style={{ maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem', color: '#646a66' }}>
-                        Rich in protein, vitamins, essential minerals, and dietary fibers. 100% natural, no chemicals or preservatives. Certified sprouted nutrition.
+                <div className="shop-header-wrapper">
+                    <span className="section-subtitle">{t('productSectionSub')}</span>
+                    <h1 className="shop-page-title">{t('productSectionTitle')}</h1>
+                    <p className="shop-page-desc">
+                        {t('productSectionDesc')}
                     </p>
                 </div>
-            </div>
-
-            {/* Signature Range — animated product showcase */}
-            <ProductShowcase products={products} onProductView={onProductView} onAddToCart={onAddToCart} />
-
-            <div className="container">
 
                 {/* Filter Bar */}
                 <div className="shop-filter-bar">
                     <div className="shop-categories">
-                        <button type="button" 
-                            className={`filter-chip ${selectedCategory === 'All' ? 'active' : ''}`}
-                            onClick={() => setSelectedCategory('All')}
-                        >
-                            All Products
-                        </button>
-                        <button type="button" 
-                            className={`filter-chip ${selectedCategory === 'Starter' ? 'active' : ''}`}
-                            onClick={() => setSelectedCategory('Starter')}
-                        >
-                            Starter Packs
-                        </button>
-                        <button type="button" 
-                            className={`filter-chip ${selectedCategory === 'Family' ? 'active' : ''}`}
-                            onClick={() => setSelectedCategory('Family')}
-                        >
-                            Family Packs
-                        </button>
-                        <button type="button" 
-                            className={`filter-chip ${selectedCategory === 'Premium' ? 'active' : ''}`}
-                            onClick={() => setSelectedCategory('Premium')}
-                        >
-                            Bulk Value
-                        </button>
+                        {categories.map(cat => (
+                            <button
+                                key={cat.id || cat.name}
+                                className={`filter-chip ${activeCategory === cat.name || (activeCategory === 'All Products' && cat.name === 'All Products') ? 'active' : ''}`}
+                                onClick={() => handleCategoryClick(cat.name)}
+                            >
+                                {cat.name}
+                            </button>
+                        ))}
                     </div>
-                    <div style={{ fontSize: '0.85rem', color: '#646a66', fontWeight: 600 }}>
-                        Showing {filteredProducts.length} products
+                    <div className="shop-item-count">
+                        Showing {filteredProducts.length} items
                     </div>
                 </div>
 
-                {/* Products Grid */}
-                <div className="shop-grid">
-                    {filteredProducts.map(product => (
-                        <div className="product-card" key={product.id}>
-                            <div
-                                className="product-card-image-wrap"
-                                {...clickable(() => onProductView(product.id))}
-                            >
-                                {product.badge && (
-                                    <span className="product-card-badge">{product.badge}</span>
-                                )}
-                                <img
-                                    src={product.image}
-                                    alt={product.name}
-                                    className="product-card-image"
-                                    loading="lazy"
-                                    decoding="async"
-                                    style={product.imageStyle || {}}
-                                />
-                            </div>
-                            
-                            <div className="product-card-info">
-                                <span className="product-card-category">{product.category}</span>
-                                <h3
-                                    className="product-card-title"
-                                    {...clickable(() => onProductView(product.id))}
-                                >
-                                    {product.name}
-                                </h3>
-                                <p className="product-card-desc">{product.description}</p>
-                                
-                                <div className="product-card-footer">
-                                    <span className="product-card-price">
-                                        {product.inrPrice}
-                                    </span>
-                                    <button type="button" 
-                                        className="btn btn-secondary product-card-btn"
-                                        onClick={() => onAddToCart(product.id, product.name, product.price, 'one-time')}
-                                    >
-                                        Add to Cart
-                                    </button>
-                                </div>
-                            </div>
+                {/* Products Grid or Empty State */}
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '60px 20px', fontSize: '1rem', color: '#646a66' }}>
+                        Loading products from backend server...
+                    </div>
+                ) : filteredProducts.length > 0 ? (
+                    <div className="shop-grid-4col">
+                        {filteredProducts.map(product => (
+                            <ProductCard
+                                key={product.id}
+                                {...product}
+                                onProductView={onProductView}
+                                onAddToCart={onAddToCart}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="no-products-found-card">
+                        <div className="no-products-icon-wrap">
+                            <span>🌾</span>
                         </div>
-                    ))}
-                </div>
+                        <h3 className="no-products-title">No products available yet</h3>
+                        <p className="no-products-desc">
+                            We’re working on bringing more products to this category. Check back soon!
+                        </p>
+                        <button
+                            className="btn btn-primary no-products-btn"
+                            onClick={() => handleCategoryClick('All Products')}
+                        >
+                            View All Products
+                        </button>
+                    </div>
+                )}
 
             </div>
         </main>
     );
 }
-export { PRODUCTS };
