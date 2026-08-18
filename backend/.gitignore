@@ -1,6 +1,7 @@
 vendor/
 .env
 db.sqlite3
+database.sqlite
 .phpunit.result.cache
 public/storage
 *.pyc
