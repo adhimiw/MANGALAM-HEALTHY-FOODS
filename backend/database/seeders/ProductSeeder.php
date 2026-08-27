@@ -16,26 +16,27 @@ class ProductSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
         ProductPackageSize::truncate();
         Product::truncate();
+        Category::truncate();
         Schema::enableForeignKeyConstraints();
 
-        $catAncestral = Category::firstOrCreate(
-            ['name' => 'Ancestral Health Mixes'],
-            ['slug' => 'ancestral-health-mixes', 'status' => 1]
+        $catAncestral = Category::updateOrCreate(
+            ['slug' => 'ancestral-health-mixes'],
+            ['name' => 'Ancestral Health Mixes', 'status' => 1]
         );
 
-        $catRice = Category::firstOrCreate(
-            ['name' => 'Heritage Mappillai Rice'],
-            ['slug' => 'heritage-mappillai-rice', 'status' => 1]
+        $catRice = Category::updateOrCreate(
+            ['slug' => 'heritage-mappillai-rice'],
+            ['name' => 'Heritage Mappillai Rice', 'status' => 1]
         );
 
-        $catMillets = Category::firstOrCreate(
-            ['name' => 'Soak-Sprouted Millets'],
-            ['slug' => 'soak-sprouted-millets', 'status' => 1]
+        $catMillets = Category::updateOrCreate(
+            ['slug' => 'soak-sprouted-millets'],
+            ['name' => 'Soak-Sprouted Millets', 'status' => 1]
         );
 
-        $catSethiyathope = Category::firstOrCreate(
-            ['name' => 'Sethiyathope Artisanal Blends'],
-            ['slug' => 'sethiyathope-artisanal-blends', 'status' => 1]
+        $catSethiyathope = Category::updateOrCreate(
+            ['slug' => 'sethiyathope-artisanal-blends'],
+            ['name' => 'Sethiyathope Artisanal Blends', 'status' => 1]
         );
 
         $products = [

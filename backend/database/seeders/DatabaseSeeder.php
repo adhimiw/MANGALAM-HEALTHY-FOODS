@@ -23,25 +23,9 @@ class DatabaseSeeder extends Seeder
                 'contact_number' => '1234567890',
                 'password'       => Hash::make('12345678'),
                 'role'           => User::ROLE_SUPER_ADMIN,
+                'is_blocked'     => false,
             ]
         );
-
-        $defaultCategories = [
-            'Ancestral Health Mixes',
-            'Heritage Mappillai Rice',
-            'Soak-Sprouted Millets',
-            'Sethiyathope Artisanal Blends',
-        ];
-
-        foreach ($defaultCategories as $catName) {
-            \App\Models\Category::firstOrCreate(
-                ['name' => $catName],
-                [
-                    'slug'   => \Illuminate\Support\Str::slug($catName),
-                    'status' => 1,
-                ]
-            );
-        }
 
         $this->call(ProductSeeder::class);
     }
