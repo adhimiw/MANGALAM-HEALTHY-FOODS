@@ -12,32 +12,29 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database for pure production readiness.
-     * Only provisions Super Admin and system gateway settings.
-     * Zero mock products, categories, or dummy orders are seeded.
-     */
     public function run(): void
     {
-        // 1. Super Admin Account (Password: 12345678)
-        User::updateOrCreate(
-            ['email' => 'superadmin@mangalam.com'],
-            [
+        // 1. Reset Admin user passwords to 12345678
+        User::where('role', User::ROLE_SUPER_ADMIN)
+            ->orWhere('email', 'superadmin@mangalam.com')
+            ->orWhere('email', 'admin@mangalam.com')
+            ->update(['password' => Hash::make('12345678')]);
+
+        // 2. Ensure Super Admin exists
+        $admin = User::where('email', 'superadmin@mangalam.com')->first();
+        if (!$admin) {
+            User::create([
+                'email'           => 'superadmin@mangalam.com',
                 'full_name'       => 'Super Admin',
                 'contact_number'  => '9025192863',
                 'whatsapp_number' => '9025192863',
                 'password'        => Hash::make('12345678'),
                 'role'            => User::ROLE_SUPER_ADMIN,
                 'is_blocked'      => false,
-            ]
-        );
+            ]);
+        }
 
-        // Also ensure any existing admin account has password reset to 12345678
-        User::where('role', User::ROLE_SUPER_ADMIN)
-            ->orWhere('email', 'admin@mangalam.com')
-            ->update(['password' => Hash::make('12345678')]);
-
-        // 2. System WhatsApp Settings
+        // 3. System WhatsApp Settings
         WhatsAppSetting::updateOrCreate(
             ['id' => 1],
             [
@@ -47,8 +44,6 @@ class DatabaseSeeder extends Seeder
                 'admin_phone_number' => '919025192863',
                 'is_enabled'         => true,
                 'auto_reply_enabled' => true,
-                'order_notifications'=> true,
-                'welcome_message'    => '🌿 Welcome to Mangalam Healthy Foods! How can we assist you with our organic sprouted health mixes today?',
             ]
         );
     }
