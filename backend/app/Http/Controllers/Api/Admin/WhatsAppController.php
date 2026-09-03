@@ -169,6 +169,72 @@ class WhatsAppController extends Controller
     }
 
     /**
+     * Delete a single conversation and its message history from DB.
+     */
+    public function deleteConversation($id): JsonResponse
+    {
+        $conv = WhatsAppConversation::find($id);
+        if (!$conv) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Conversation not found.',
+            ], 404);
+        }
+
+        WhatsAppMessage::where('conversation_id', $id)->delete();
+        $conv->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Conversation and message history deleted successfully from database.',
+        ]);
+    }
+
+    /**
+     * Clear all messages in a conversation while retaining the contact.
+     */
+    public function clearMessages($id): JsonResponse
+    {
+        $conv = WhatsAppConversation::find($id);
+        if (!$conv) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Conversation not found.',
+            ], 404);
+        }
+
+        WhatsAppMessage::where('conversation_id', $id)->delete();
+        $conv->update([
+            'last_message'    => null,
+            'last_message_at' => null,
+            'unread_count'    => 0,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Chat message history cleared successfully.',
+        ]);
+    }
+
+    /**
+     * Purge ALL WhatsApp conversations and message history from DB.
+     */
+    public function purgeAllConversations(): JsonResponse
+    {
+        $msgsCount = WhatsAppMessage::count();
+        $convsCount = WhatsAppConversation::count();
+
+        WhatsAppMessage::truncate();
+        WhatsAppConversation::truncate();
+        \Illuminate\Support\Facades\Cache::forget('wa_user_sync_lock');
+
+        return response()->json([
+            'success' => true,
+            'message' => "Successfully purged all {$convsCount} conversations and {$msgsCount} messages from database.",
+        ]);
+    }
+
+    /**
      * Get current WhatsApp settings.
      */
     public function getSettings(): JsonResponse
