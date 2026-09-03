@@ -19,33 +19,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Super Admin Account
+        // 1. Super Admin Account (Password: 12345678)
         User::updateOrCreate(
             ['email' => 'superadmin@mangalam.com'],
             [
-                'full_name'      => 'Super Admin',
-                'contact_number' => '9025192863',
-                'whatsapp_number'=> '9025192863',
-                'password'       => Hash::make('12345678'),
-                'role'           => User::ROLE_SUPER_ADMIN,
-                'is_blocked'     => false,
+                'full_name'       => 'Super Admin',
+                'contact_number'  => '9025192863',
+                'whatsapp_number' => '9025192863',
+                'password'        => Hash::make('12345678'),
+                'role'            => User::ROLE_SUPER_ADMIN,
+                'is_blocked'      => false,
             ]
         );
 
-        // 2. Admin Account (Secondary Admin)
-        User::updateOrCreate(
-            ['email' => 'admin@mangalam.com'],
-            [
-                'full_name'      => 'Mangalam Admin',
-                'contact_number' => '9025192863',
-                'whatsapp_number'=> '9025192863',
-                'password'       => Hash::make('12345678'),
-                'role'           => User::ROLE_SUPER_ADMIN,
-                'is_blocked'     => false,
-            ]
-        );
+        // Also ensure any existing admin account has password reset to 12345678
+        User::where('role', User::ROLE_SUPER_ADMIN)
+            ->orWhere('email', 'admin@mangalam.com')
+            ->update(['password' => Hash::make('12345678')]);
 
-        // 3. System WhatsApp Settings
+        // 2. System WhatsApp Settings
         WhatsAppSetting::updateOrCreate(
             ['id' => 1],
             [
