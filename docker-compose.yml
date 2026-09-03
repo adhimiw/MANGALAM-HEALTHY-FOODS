@@ -49,5 +49,30 @@ services:
     depends_on:
       - backend
 
+  openwa:
+    build:
+      context: ./OpenWA
+      dockerfile: Dockerfile
+    container_name: healthmix_openwa
+    restart: always
+    ports:
+      - "2785:2785"
+    environment:
+      - PORT=2785
+      - NODE_ENV=development
+      - DATABASE_TYPE=sqlite
+      - DATABASE_NAME=/app/data/openwa.sqlite
+      - ENGINE_TYPE=baileys
+      - SESSION_DATA_PATH=/app/data/sessions
+      - AUTO_START_SESSIONS=true
+      - API_MASTER_KEY=mangalam_secret_wa_api_key_2026
+      - WEBHOOK_URL=http://backend:8000/api/webhooks/openwa
+      - WEBHOOK_EVENTS=message.create,message.ack,session.status
+    volumes:
+      - openwa_data:/app/data
+    depends_on:
+      - backend
+
 volumes:
   db_data:
+  openwa_data:

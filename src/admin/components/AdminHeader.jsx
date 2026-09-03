@@ -4,7 +4,6 @@ import ThemeSwitcher from './ThemeSwitcher';
 export default function AdminHeader({
     activeTab,
     onToggleMobileSidebar,
-    onResetData,
     theme,
     onToggleTheme
 }) {
@@ -28,6 +27,14 @@ export default function AdminHeader({
         users: {
             title: 'User Management',
             subtitle: 'Manage registered customer accounts (Role 2) and vendor partners (Role 3)'
+        },
+        settings: {
+            title: 'Logo & Branding',
+            subtitle: 'Manage storefront logos, dark/light branding, and brand assets'
+        },
+        whatsapp: {
+            title: 'WhatsApp & Live Chat CRM',
+            subtitle: 'Real-time customer WhatsApp messaging, automated order alerts, and OpenWA gateway'
         }
     };
 
@@ -48,48 +55,11 @@ export default function AdminHeader({
                         <line x1="3" y1="18" x2="21" y2="18"/>
                     </svg>
                 </button>
-                <div className="admin-page-title-group">
-                    <h1>{currentMeta.title}</h1>
-                    <p>{currentMeta.subtitle}</p>
-                </div>
             </div>
 
             <div className="admin-topbar-actions">
                 {/* Theme Switcher */}
-                <ThemeSwitcher theme={theme} onToggle={onToggleTheme} />
-
-                {/* Reset Data Shortcut */}
-                {onResetData && (
-                    <button 
-                        type="button"
-                        className="admin-btn admin-btn-secondary" 
-                        onClick={onResetData}
-                        title="Reset mock data to initial baseline"
-                        style={{ padding: '7px 12px', fontSize: '0.8rem' }}
-                    >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="1 4 1 10 7 10"/>
-                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-                        </svg>
-                        <span>Reset Data</span>
-                    </button>
-                )}
-
-                {/* View Website */}
-                <a 
-                    href="/" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="admin-btn admin-btn-secondary"
-                    style={{ padding: '7px 12px', fontSize: '0.8rem' }}
-                >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                        <polyline points="15 3 21 3 21 9"/>
-                        <line x1="10" y1="14" x2="21" y2="3"/>
-                    </svg>
-                    <span>View Store</span>
-                </a>
+                <ThemeSwitcher theme={theme} onToggleTheme={onToggleTheme} />
             </div>
         </header>
     );
