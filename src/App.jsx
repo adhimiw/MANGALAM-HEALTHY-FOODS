@@ -15,7 +15,8 @@ import {
     removeFromCartApi,
     clearCartApi,
     fetchFavoritesApi,
-    toggleFavoriteApi
+    toggleFavoriteApi,
+    subscribeToCacheInvalidation
 } from './services/api';
 
 const ProductDetail = lazy(() => import('./pages/ProductDetail'));
@@ -33,12 +34,37 @@ const PageLoader = () => (
 const parseRouteFromUrl = () => {
     const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
     
+    // Direct admin routes: /admin, /admin/dashboard, /admin/users, /admin/products, /admin/categories, /admin/orders, /admin/queries, /admin/banners, /admin/branding, /admin/settings, /admin/whatsapp
     if (pathname.startsWith('/admin')) {
-        const sub = pathname.replace(/^\/admin\/?/, '').split('/')[0].trim();
-        const validAdminTabs = ['dashboard', 'categories', 'products', 'orders', 'users'];
-        const adminTab = validAdminTabs.includes(sub) ? sub : 'dashboard';
+        const sub = pathname.replace(/^\/admin\/?/, '').split('/')[0].trim().toLowerCase();
+        const validAdminTabs = ['dashboard', 'categories', 'products', 'orders', 'users', 'queries', 'banners', 'marquee', 'settings', 'branding', 'whatsapp'];
+        let adminTab = validAdminTabs.includes(sub) ? sub : 'dashboard';
+        if (adminTab === 'branding') adminTab = 'settings';
+        if (adminTab === 'banner' || adminTab === 'hero-banners') adminTab = 'banners';
+        if (adminTab === 'inquiries' || adminTab === 'contact') adminTab = 'queries';
         return { page: 'admin', param: adminTab };
     }
+
+    // Direct shortcut paths for admin pages: /dashboard, /users, /orders, /products, /categories, /queries, /banners, /marquee, /branding, /settings, /whatsapp
+    const directAdminMap = {
+        '/dashboard': 'dashboard',
+        '/users': 'users',
+        '/orders': 'orders',
+        '/products': 'products',
+        '/categories': 'categories',
+        '/queries': 'queries',
+        '/inquiries': 'queries',
+        '/banners': 'banners',
+        '/hero-banners': 'banners',
+        '/marquee': 'marquee',
+        '/branding': 'settings',
+        '/settings': 'settings',
+        '/whatsapp': 'whatsapp'
+    };
+    if (directAdminMap[pathname]) {
+        return { page: 'admin', param: directAdminMap[pathname] };
+    }
+
     if (pathname.startsWith('/product/')) {
         const param = pathname.replace('/product/', '').trim();
         return { page: 'product', param: param || null };
@@ -102,9 +128,17 @@ export default function App() {
         }
     }, []); // Run once on startup instead of every page switch
 
-    const loadProducts = async () => {
+    // Subscribe to product cache invalidation across all tabs & admin operations
+    useEffect(() => {
+        const unsubscribe = subscribeToCacheInvalidation('products', () => {
+            loadProducts(true);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    const loadProducts = async (forceRefresh = false) => {
         setLoadingProducts(true);
-        const res = await fetchProductsApi();
+        const res = await fetchProductsApi(forceRefresh);
         if (res.success && res.data) {
             setProducts(res.data);
         }
