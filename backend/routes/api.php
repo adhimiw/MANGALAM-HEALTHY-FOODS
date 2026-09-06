@@ -204,6 +204,8 @@ Route::prefix('admin')->group(function () {
         Route::get('ping', [AdminWhatsAppController::class, 'pingGateway']);
         Route::post('ping', [AdminWhatsAppController::class, 'pingGateway']);
         Route::get('keepalive-logs', [AdminWhatsAppController::class, 'getKeepaliveLogs']);
+        Route::get('logs', [AdminWhatsAppController::class, 'getMessageLogs']);
+        Route::delete('messages/{id}', [AdminWhatsAppController::class, 'deleteMessage']);
     });
 });
 

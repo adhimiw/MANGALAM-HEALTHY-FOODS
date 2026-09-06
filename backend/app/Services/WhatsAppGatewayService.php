@@ -25,6 +25,7 @@ class WhatsAppGatewayService
         $candidates = array_unique(array_filter([
             $settings->api_base_url,
             env('OPENWA_URL'),
+            'https://mangalam-openwa-gateway-13xy.onrender.com',
             'https://mangalam-openwa-gateway.onrender.com',
             'http://localhost:2785',
             'http://127.0.0.1:2785',
@@ -47,7 +48,7 @@ class WhatsAppGatewayService
             }
         }
 
-        return $settings->api_base_url ?: 'https://mangalam-openwa-gateway.onrender.com';
+        return $settings->api_base_url ?: 'https://mangalam-openwa-gateway-13xy.onrender.com';
     }
 
     /**

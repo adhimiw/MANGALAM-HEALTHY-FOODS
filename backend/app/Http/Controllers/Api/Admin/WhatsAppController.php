@@ -398,4 +398,184 @@ class WhatsAppController extends Controller
             'data'    => $logs,
         ]);
     }
+
+    /**
+     * Get automated dispatched message logs with filtering, search, and summary metrics.
+     */
+    public function getMessageLogs(Request $request): JsonResponse
+    {
+        $search = trim((string)$request->input('search', ''));
+        $filter = trim((string)$request->input('filter', 'all'));
+        $page = (int)$request->input('page', 1);
+        $perPage = (int)$request->input('per_page', 50);
+
+        $query = WhatsAppMessage::with(['conversation.user', 'order.user', 'order.items'])
+            ->orderBy('created_at', 'desc');
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('message', 'like', "%{$search}%")
+                  ->orWhereHas('conversation', function ($cq) use ($search) {
+                      $cq->where('customer_name', 'like', "%{$search}%")
+                         ->orWhere('customer_phone', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('order', function ($oq) use ($search) {
+                      $oq->where('order_number', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter by notification event type
+        if ($filter === 'order_placed') {
+            $query->where(function ($q) {
+                $q->where('message', 'like', '%Order Confirmed%')
+                  ->orWhere('message', 'like', '%NEW ORDER RECEIVED%');
+            });
+        } elseif ($filter === 'shipped') {
+            $query->where(function ($q) {
+                $q->where('message', 'like', '%Dispatched%')
+                  ->orWhere('message', 'like', '%shipped%')
+                  ->orWhere('message', 'like', '%Shipment%');
+            });
+        } elseif ($filter === 'delivered') {
+            $query->where('message', 'like', '%Delivered%');
+        } elseif ($filter === 'processing') {
+            $query->where('message', 'like', '%Processing%');
+        } elseif ($filter === 'admin') {
+            $query->where(function ($q) {
+                $q->where('message', 'like', '%NEW ORDER RECEIVED%')
+                  ->orWhere('message', 'like', '%ORDER STATUS UPDATED%')
+                  ->orWhere('message', 'like', '%Security Verification%')
+                  ->orWhere('message', 'like', '%Test Alert%');
+            });
+        }
+
+        // Metrics counts
+        $totalLogs = WhatsAppMessage::count();
+        $orderPlacedCount = WhatsAppMessage::where(function ($q) {
+            $q->where('message', 'like', '%Order Confirmed%')
+              ->orWhere('message', 'like', '%NEW ORDER RECEIVED%');
+        })->count();
+        $shippedCount = WhatsAppMessage::where(function ($q) {
+            $q->where('message', 'like', '%Dispatched%')
+              ->orWhere('message', 'like', '%shipped%')
+              ->orWhere('message', 'like', '%Shipment%');
+        })->count();
+        $deliveredCount = WhatsAppMessage::where('message', 'like', '%Delivered%')->count();
+        $adminCount = WhatsAppMessage::where(function ($q) {
+            $q->where('message', 'like', '%NEW ORDER RECEIVED%')
+              ->orWhere('message', 'like', '%ORDER STATUS UPDATED%')
+              ->orWhere('message', 'like', '%Security Verification%')
+              ->orWhere('message', 'like', '%Test Alert%');
+        })->count();
+
+        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+
+        $formattedItems = collect($paginated->items())->map(function ($msg) {
+            $text = $msg->message ?? '';
+            $eventType = 'general';
+            $eventLabel = 'Notice';
+            $eventColor = 'slate';
+
+            if (str_contains($text, 'Order Confirmed') || (str_contains($text, 'NEW ORDER RECEIVED') && !str_contains($text, 'STATUS UPDATED'))) {
+                $eventType = 'order_placed';
+                $eventLabel = 'Order Placed';
+                $eventColor = 'emerald';
+            } elseif (str_contains($text, 'Dispatched') || str_contains($text, 'shipped') || str_contains($text, 'Shipment')) {
+                $eventType = 'shipped';
+                $eventLabel = 'Shipped';
+                $eventColor = 'indigo';
+            } elseif (str_contains($text, 'Delivered')) {
+                $eventType = 'delivered';
+                $eventLabel = 'Delivered';
+                $eventColor = 'green';
+            } elseif (str_contains($text, 'Processing')) {
+                $eventType = 'processing';
+                $eventLabel = 'Processing';
+                $eventColor = 'blue';
+            } elseif (str_contains($text, 'Security Verification') || str_contains($text, 'OTP')) {
+                $eventType = 'otp';
+                $eventLabel = 'OTP Security';
+                $eventColor = 'amber';
+            } elseif (str_contains($text, 'ORDER STATUS UPDATED')) {
+                $eventType = 'status_updated';
+                $eventLabel = 'Status Changed';
+                $eventColor = 'purple';
+            } elseif (str_contains($text, 'Cancelled')) {
+                $eventType = 'cancelled';
+                $eventLabel = 'Cancelled';
+                $eventColor = 'rose';
+            }
+
+            // Recipient
+            $conv = $msg->conversation;
+            $order = $msg->order;
+            $user = $order?->user ?: $conv?->user;
+
+            $recipientName = $conv?->customer_name ?: ($user?->full_name ?: ($user?->name ?: 'Customer'));
+            $recipientPhone = $conv?->customer_phone ?: ($user?->whatsapp_number ?: ($user?->contact_number ?: ''));
+            $isAdminAlert = str_contains($text, 'NEW ORDER RECEIVED') || str_contains($text, 'ORDER STATUS UPDATED') || str_contains($text, 'Security Verification') || str_contains($text, 'Test Alert');
+
+            if ($isAdminAlert) {
+                $recipientName = 'Mangalam Admin';
+            }
+
+            return [
+                'id'             => $msg->id,
+                'sender_type'    => $msg->sender_type,
+                'status'         => $msg->status ?: 'sent',
+                'order_id'       => $msg->order_id,
+                'order_number'   => $order?->order_number ?: null,
+                'total_amount'   => $order?->total_amount ?: null,
+                'recipient_name' => $recipientName,
+                'recipient_phone'=> $recipientPhone,
+                'is_admin'       => $isAdminAlert,
+                'event_type'     => $eventType,
+                'event_label'    => $eventLabel,
+                'event_color'    => $eventColor,
+                'message'        => $text,
+                'created_at'     => $msg->created_at ? $msg->created_at->toIso8601String() : now()->toIso8601String(),
+                'formatted_time' => $msg->created_at ? $msg->created_at->format('d M Y, h:i A') : '',
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data'    => $formattedItems,
+            'meta'    => [
+                'current_page' => $paginated->currentPage(),
+                'last_page'    => $paginated->lastPage(),
+                'total'        => $paginated->total(),
+                'per_page'     => $paginated->perPage(),
+            ],
+            'counts'  => [
+                'total'        => $totalLogs,
+                'order_placed' => $orderPlacedCount,
+                'shipped'      => $shippedCount,
+                'delivered'    => $deliveredCount,
+                'admin_alerts' => $adminCount,
+            ],
+        ]);
+    }
+
+    /**
+     * Delete a single message log record.
+     */
+    public function deleteMessage($id): JsonResponse
+    {
+        $msg = WhatsAppMessage::find($id);
+        if (!$msg) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Message log record not found.',
+            ], 404);
+        }
+
+        $msg->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Message log removed successfully.',
+        ]);
+    }
 }
