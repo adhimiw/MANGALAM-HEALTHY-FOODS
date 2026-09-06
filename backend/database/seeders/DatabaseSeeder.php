@@ -26,25 +26,33 @@ class DatabaseSeeder extends Seeder
             User::create([
                 'email'           => 'superadmin@mangalam.com',
                 'full_name'       => 'Super Admin',
-                'contact_number'  => '9025192863',
-                'whatsapp_number' => '9025192863',
+                'contact_number'  => '7094074655',
+                'whatsapp_number' => '7094074655',
                 'password'        => Hash::make('12345678'),
                 'role'            => User::ROLE_SUPER_ADMIN,
                 'is_blocked'      => false,
             ]);
         }
 
-        // 3. System WhatsApp Settings
-        WhatsAppSetting::updateOrCreate(
-            ['id' => 1],
-            [
+        // 3. System WhatsApp Settings (preserve existing scanned phone)
+        $existing = WhatsAppSetting::find(1);
+        if (!$existing) {
+            WhatsAppSetting::create([
+                'id'                 => 1,
                 'session_name'       => 'mangalam-admin',
                 'api_base_url'       => 'https://mangalam-openwa-gateway.onrender.com',
                 'api_key'            => 'owa_k1_747bb008102884877e6105f90f3ed73ff2d002874da80296343e730386364341',
-                'admin_phone_number' => '919025192863',
+                'admin_phone_number' => '',
                 'is_enabled'         => true,
                 'auto_reply_enabled' => true,
-            ]
-        );
+            ]);
+        } else {
+            $existing->update([
+                'session_name' => 'mangalam-admin',
+                'api_base_url' => 'https://mangalam-openwa-gateway.onrender.com',
+                'api_key'      => 'owa_k1_747bb008102884877e6105f90f3ed73ff2d002874da80296343e730386364341',
+                'is_enabled'   => true,
+            ]);
+        }
     }
 }
