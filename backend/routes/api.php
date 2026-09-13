@@ -155,6 +155,8 @@ Route::prefix('admin')->group(function () {
     // Admin Product routes
     Route::apiResource('products', AdminProductController::class);
     Route::post('products/{id}', [AdminProductController::class, 'update']);
+    Route::patch('products/{id}/badge', [AdminProductController::class, 'updateBadge']);
+    Route::post('products/{id}/badge', [AdminProductController::class, 'updateBadge']);
 
     // Admin Order routes
     Route::get('orders', [AdminOrderController::class, 'index']);
@@ -204,8 +206,6 @@ Route::prefix('admin')->group(function () {
         Route::get('ping', [AdminWhatsAppController::class, 'pingGateway']);
         Route::post('ping', [AdminWhatsAppController::class, 'pingGateway']);
         Route::get('keepalive-logs', [AdminWhatsAppController::class, 'getKeepaliveLogs']);
-        Route::get('logs', [AdminWhatsAppController::class, 'getMessageLogs']);
-        Route::delete('messages/{id}', [AdminWhatsAppController::class, 'deleteMessage']);
     });
 });
 
