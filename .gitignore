@@ -29,6 +29,9 @@ backend/vendor/
 backend/.env
 backend/public/storage
 backend/db.sqlite3
+backend/storage/framework/
+backend/storage/logs/
 mangalam.txt
 screenshot_*.png
+scratch/
 
