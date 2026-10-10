@@ -102,6 +102,8 @@ export default function HeroCarousel({ setPage }) {
 
     return (
         <section className="hero-main-wrapper">
+            {/* SEO H1: keyword-bearing eyebrow, visible, bilingual via translations */}
+            <h1 className="hero-seo-h1" style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center', color: 'var(--color-primary)', margin: '0 0 10px 0', padding: '0 16px' }}>{t('heroSeoH1')}</h1>
             {/* 100% Full-Width Edge-to-Edge Hero Banner */}
             {loading && banners.length === 0 ? (
                 <div 

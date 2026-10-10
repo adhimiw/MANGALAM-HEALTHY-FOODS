@@ -9,12 +9,19 @@ export default function About({ setPage }) {
                 <div className="about-narrative">
                     <div className="narrative-content">
                         <span className="section-subtitle">OUR MISSION</span>
+                        <h1 style={{ fontSize: '2.4rem', lineHeight: 1.2, marginBottom: '16px' }}>Our Story: Mangalam Healthy Foods &amp; Amutham Sprouted Health Mix</h1>
                         <h2>Bridging Traditional Wisdom and Clean Nutrition</h2>
                         <p>
                             Based in Sethiyathope, Cuddalore District, <strong>Mangalam Healthy Foods</strong> was established with a singular mission: to provide families with wholesome, chemical-free, and bioavailable nutrition derived from ancient grains.
                         </p>
                         <p>
+                            For more than 20 years, Amutham Sprouted Health Mix was prepared only in our own home kitchen — soak-sprouted, stone-ground, and shared with family, neighbours, and relatives. In 2019, the trust of our community inspired us to grow into Mangalam Healthy Foods Company, so that the same home recipe could reach thousands of families.
+                        </p>
+                        <p>
                             We specialize in soak-sprouting activation. Sprouting is a natural germination process that degrades anti-nutrients (phytic acid), making key minerals like Calcium, Iron, Zinc, and Magnesium easy to digest and absorb. We enrich our porridges with organic cardamom, creating a comforting, aromatic experience.
+                        </p>
+                        <p>
+                            Every batch is handcrafted in our Sethiyathope heritage facility from 9 soak-sprouted grains and millets with traditional Mappillai Samba rice — slow-crafted and hygienically milled, with zero chemicals, preservatives, or refined sugar. Registered under FSSAI 12423028000746, UDYAM-TN-04-0125789, and GSTN 33FDAPM8867B1ZI.
                         </p>
                         <button onClick={() => setPage('shop')} className="btn btn-primary" style={{ marginTop: '20px' }}>
                             Explore Our Products

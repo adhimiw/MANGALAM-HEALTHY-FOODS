@@ -24,6 +24,9 @@ export const translations = {
         heroSlide2Desc: "Crafted with sprouted blackgram & traditional Mappillai Samba rice. High in fiber, calcium, and iron for building stamina and strengthening bones.",
         heroSlide2Cta: "Buy Now - From ₹115",
 
+        // SEO H1 (homepage hero, keyword-bearing, visible eyebrow)
+        heroSeoH1: "Amutham Sprouted Health Mix — 100% Natural Ancient Grain Nutrition",
+
         // Trust Badges / Authentic Site Pillars
         badgeSprouted: "100% Sprout-Activated",
         badgeNoChemicals: "No Added Sugar / Preservatives",
@@ -176,6 +179,9 @@ export const translations = {
         heroSlide2Title: "மங்களம் உளுந்தம் மாவு (மாப்பிள்ளை சம்பா அரிசியுடன்)",
         heroSlide2Desc: "முளைகட்டிய கருப்பு உளுந்து மற்றும் பாரம்பரிய மாப்பிள்ளை சம்பா அரிசி சேர்த்து தயாரிக்கப்பட்டது. தசை வலிமை, எலும்பு உறுதி மற்றும் நரம்பு மண்டலத்திற்கு ஏற்றது.",
         heroSlide2Cta: "வாங்குங்கள் - ₹115 முதல்",
+
+        // SEO H1 (homepage hero, keyword-bearing, visible eyebrow)
+        heroSeoH1: "அமுதம் முளைகட்டிய சத்து மாவு — 100% இயற்கை பாரம்பரிய தானிய ஊட்டச்சத்து",
 
         // Trust Badges / Authentic Site Pillars
         badgeSprouted: "100% முளைகட்டிய தானியங்கள்",

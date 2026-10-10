@@ -115,6 +115,61 @@ export default function ProductDetail({
 
     const product = products.find(p => String(p.id) === String(productId) || p.slug === productId) || products[0];
 
+    // SEO: dynamic Product + BreadcrumbList JSON-LD (injected head script, cleaned up on change/unmount)
+    useEffect(() => {
+        const existing = document.getElementById('pdp-jsonld');
+        if (existing) existing.remove();
+        if (!product || !product.name) return;
+        const origin = 'https://mahealthyfoods.in';
+        const slug = product.slug || product.id;
+        const rawImg = (product.images && product.images[0]) || '';
+        const img = rawImg
+            ? (String(rawImg).startsWith('http') ? String(rawImg) : `${origin}${String(rawImg).startsWith('/') ? '' : '/'}${String(rawImg)}`)
+            : `${origin}/og-image.jpg`;
+        const price = Number(product.actual_price || product.price
+            || (product.package_sizes && product.package_sizes[0] && product.package_sizes[0].variant_price) || 110);
+        const stockNum = Number(product.stock);
+        const inStock = product.stock === undefined || product.stock === null ? true : stockNum > 0;
+        const desc = String(product.description || 'Amutham Sprouted Health Mix by Mangalam Healthy Foods — 100% natural, soak-sprouted ancient grains and millets from Sethiyathope, Tamil Nadu.').slice(0, 300);
+        const graph = {
+            '@context': 'https://schema.org',
+            '@graph': [
+                {
+                    '@type': 'Product',
+                    name: product.name,
+                    image: img,
+                    description: desc,
+                    sku: String(product.id || slug),
+                    brand: { '@type': 'Brand', name: 'Mangalam Healthy Foods' },
+                    offers: {
+                        '@type': 'Offer',
+                        url: `${origin}/product/${slug}`,
+                        priceCurrency: 'INR',
+                        price: price,
+                        availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
+                    }
+                },
+                {
+                    '@type': 'BreadcrumbList',
+                    itemListElement: [
+                        { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/` },
+                        { '@type': 'ListItem', position: 2, name: 'Products', item: `${origin}/products` },
+                        { '@type': 'ListItem', position: 3, name: product.name, item: `${origin}/product/${slug}` }
+                    ]
+                }
+            ]
+        };
+        const tag = document.createElement('script');
+        tag.type = 'application/ld+json';
+        tag.id = 'pdp-jsonld';
+        tag.text = JSON.stringify(graph);
+        document.head.appendChild(tag);
+        return () => {
+            const el = document.getElementById('pdp-jsonld');
+            if (el) el.remove();
+        };
+    }, [product]);
+
     // Filter related products in the same category (excluding current product)
     const sameCategoryProducts = products.filter(p => {
         if (String(p.id) === String(product?.id) || p.slug === productId) return false;
