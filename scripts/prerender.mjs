@@ -24,7 +24,9 @@ try {
     // ?prerender tells animation code (CardSwap) to stay in its initial render
     // so the snapshot matches the client's first paint (clean hydration).
     await page.goto(`${url}?prerender=1`, { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('.lux-hero-title', { timeout: 20000 }) // app mounted
+    // Home renders HeroCarousel (.hero-main-wrapper); other builds used LuxuryHero
+    // (.lux-hero-title) — accept either as the "app mounted" signal.
+    await page.waitForSelector('.hero-main-wrapper, .lux-hero-title', { timeout: 20000 }) // app mounted
     await page.waitForTimeout(500) // let the rest of the fold settle
     const html = await page.content()
     writeFileSync(resolve('dist/index.html'), html)
