@@ -646,6 +646,9 @@ class WhatsAppGatewayService
                 . "🌐 *Track Order:* https://mahealthyfoods.in/profile";
 
             $this->sendMessage($customerPhone, $customerMessage, $order->id, 'system');
+
+            // Dual-send via Meta Cloud API (flag-gated, never throws)
+            MetaWhatsAppService::sendOrderPlaced($order);
         }
 
         // 2. Admin Alert Message
@@ -661,6 +664,9 @@ class WhatsAppGatewayService
                 . "👉 *View Order:* http://localhost:5173/admin/orders";
 
             $this->sendMessage($settings->admin_phone_number, $adminMessage, $order->id, 'system');
+
+            // Dual-send admin alert via Meta Cloud API (flag-gated, never throws)
+            MetaWhatsAppService::sendAdminAlert($order);
         }
     }
 
@@ -730,6 +736,9 @@ class WhatsAppGatewayService
         // Send to Customer
         if ($customerPhone) {
             $this->sendMessage($customerPhone, $message, $order->id, 'system');
+
+            // Dual-send via Meta Cloud API (flag-gated, never throws)
+            MetaWhatsAppService::sendStatusUpdate($order, $newStatus);
         }
 
         // Send Status Alert to Admin

@@ -88,6 +88,7 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\Admin\WhatsAppController as AdminWhatsAppController;
 use App\Http\Controllers\Api\WhatsAppWebhookController;
+use App\Http\Controllers\Api\MetaWhatsAppWebhookController;
 
 // Public Branding Configuration API
 Route::get('/branding', [BrandingController::class, 'index']);
@@ -103,6 +104,10 @@ Route::post('/contact', [ContactController::class, 'store']);
 
 // Public Webhook for OpenWA Inbound Messages
 Route::post('/webhooks/openwa', [WhatsAppWebhookController::class, 'handle']);
+
+// Meta Cloud API webhook (verification handshake + event receiver)
+Route::get('/webhooks/meta', [MetaWhatsAppWebhookController::class, 'verify']);
+Route::post('/webhooks/meta', [MetaWhatsAppWebhookController::class, 'receiver']);
 
 // Admin routes
 Route::prefix('admin')->group(function () {
