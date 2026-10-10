@@ -50,6 +50,8 @@ export default function ProductDetail({
 
     // Slider Cursor Navigation State & Ref for Related Products
     const sliderRef = useRef(null);
+    const titleOrig = useRef(null);
+    const descOrig = useRef(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
 
@@ -164,11 +166,37 @@ export default function ProductDetail({
         tag.id = 'pdp-jsonld';
         tag.text = JSON.stringify(graph);
         document.head.appendChild(tag);
+        // Dynamic tab title + description + share tags per product
+        if (titleOrig.current === null) {
+            titleOrig.current = document.title;
+            const md = document.querySelector('meta[name="description"]');
+            descOrig.current = md ? md.getAttribute('content') : '';
+        }
+        document.title = `${product.name} | Mangalam Healthy Foods`;
+        const setMeta = (selector, content) => {
+            let el = document.querySelector(selector);
+            if (!el) return;
+            el.setAttribute('content', content);
+        };
+        const shortDesc = desc.slice(0, 160);
+        setMeta('meta[name="description"]', `${product.name} — ${shortDesc}`);
+        setMeta('meta[property="og:title"]', `${product.name} | Mangalam Healthy Foods`);
+        setMeta('meta[property="og:description"]', shortDesc);
+        setMeta('meta[name="twitter:title"]', `${product.name} | Mangalam Healthy Foods`);
         return () => {
             const el = document.getElementById('pdp-jsonld');
             if (el) el.remove();
         };
     }, [product]);
+
+    // Restore head tags when leaving the product page
+    useEffect(() => {
+        return () => {
+            if (titleOrig.current !== null) document.title = titleOrig.current;
+            const md = document.querySelector('meta[name="description"]');
+            if (md && descOrig.current !== null) md.setAttribute('content', descOrig.current);
+        };
+    }, []);
 
     // Filter related products in the same category (excluding current product)
     const sameCategoryProducts = products.filter(p => {
